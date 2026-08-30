@@ -36,9 +36,9 @@ to provide personalized career insights.
 
 ## Team
 
-- Tanu Jain — Team Lead
-- Member 1 — Resume Intelligence & Skill Gap
-- Member 2 — UI/UX & Frontend
+- Tanu Jain — Company Intelligence Module
+- Vanshika Choudhary — Resume Intelligence & Skill Gap
+- Vaibhav Munot — UI/UX & Frontend
 
 ## Project Status
 
