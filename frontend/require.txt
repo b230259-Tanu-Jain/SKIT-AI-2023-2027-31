@@ -1,0 +1,3 @@
+# WorkSphere Frontend
+
+React.js frontend for the WorkSphere career intelligence platform.
