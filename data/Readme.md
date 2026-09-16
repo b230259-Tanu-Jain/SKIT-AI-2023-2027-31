@@ -35,4 +35,13 @@ Raw Data → Data Cleaning → NLP/Feature Extraction → Processed Data → ML 
 ## Directory Structure
 
 - `raw/` – Original datasets. 
+
 - `processed/` – Cleaned and transformed datasets used by the project.
+=======
+- `processed/` – Cleaned and transformed datasets used by the project.
+# WorkSphere data
+
+`raw/job_role_skills.csv` is the Sprint 1 role-to-skill reference dataset. Skills are pipe-separated so they can be loaded and normalised consistently before role matching in the later sprint.
+
+`processed/` is reserved for derived, reproducible datasets and should not contain original resumes.
+>>>>>>> 806a23b (Updated project features)
