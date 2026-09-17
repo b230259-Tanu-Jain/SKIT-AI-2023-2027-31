@@ -1,3 +1,0 @@
-# Optional dependencies for features/company_intelligence/sentiment.py
-torch
-transformers

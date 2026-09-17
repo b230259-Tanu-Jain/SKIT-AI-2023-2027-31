@@ -1,10 +1,10 @@
 import pandas as pd
-
 import torch
 from transformers import pipeline
 MODEL_NAME = "nlptown/bert-base-multilingual-uncased-sentiment"
 class BertSentimentAnalyzer:
     def __init__(self):
+feature/vanshika
 
 
         try:
@@ -17,6 +17,7 @@ class BertSentimentAnalyzer:
             ) from error
 
 
+main
         self.device = 0 if torch.cuda.is_available() else -1
         print("Loading BERT model...")
         self.classifier = pipeline(
@@ -73,8 +74,4 @@ class BertSentimentAnalyzer:
         df["sentiment"] = df["bert_star_score"].apply(
             sentiment_category
         )
-
         return df
-
-        
-
