@@ -5,13 +5,8 @@ from transformers import pipeline
 MODEL_NAME = "nlptown/bert-base-multilingual-uncased-sentiment"
 class BertSentimentAnalyzer:
     def __init__(self):
-=======
-
-MODEL_NAME = "nlptown/bert-base-multilingual-uncased-sentiment"
 
 
-class BertSentimentAnalyzer:
-    def __init__(self):
         try:
             import torch
             from transformers import pipeline
@@ -21,7 +16,7 @@ class BertSentimentAnalyzer:
                 "Install them with `pip install -r backend/requirements-ml.txt`."
             ) from error
 
->>>>>>> 806a23b (Updated project features)
+
         self.device = 0 if torch.cuda.is_available() else -1
         print("Loading BERT model...")
         self.classifier = pipeline(
