@@ -15,14 +15,11 @@ a {
   color: inherit;
 }
 
-/* Main Layout */
 
 .app {
   display: flex;
   min-height: 100vh;
 }
-
-/* Sidebar */
 
 .sidebar {
   width: 240px;
@@ -249,4 +246,10 @@ button:hover {
   .company-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.nav-link.active {
+  background: #e8eefc;
+  color: #2563eb;
+  font-weight: 600;
 }
