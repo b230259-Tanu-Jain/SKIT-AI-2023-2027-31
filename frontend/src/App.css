@@ -68,8 +68,6 @@ a {
   padding: 30px;
 }
 
-/* Headings */
-
 .page-title {
   font-size: 28px;
   margin-bottom: 8px;
@@ -80,7 +78,6 @@ a {
   margin-bottom: 25px;
 }
 
-/* Cards */
 
 .card-container {
   display: grid;
@@ -106,8 +103,6 @@ a {
   font-size: 28px;
   font-weight: bold;
 }
-
-/* Company Cards */
 
 .company-grid {
   display: grid;
@@ -135,8 +130,6 @@ a {
   margin-top: 12px;
 }
 
-/* Buttons */
-
 button {
   border: none;
   border-radius: 7px;
@@ -151,7 +144,6 @@ button:hover {
   opacity: 0.9;
 }
 
-/* Search */
 
 .search-box {
   width: 100%;
@@ -162,8 +154,6 @@ button:hover {
   margin-bottom: 25px;
   font-size: 14px;
 }
-
-/* Resume / Skill Gap */
 
 .section {
   background: white;
@@ -190,8 +180,6 @@ button:hover {
   font-size: 14px;
 }
 
-/* AI Assistant */
-
 .chat-container {
   background: white;
   border: 1px solid #e5e7eb;
@@ -207,8 +195,6 @@ button:hover {
   border-radius: 7px;
   margin-top: 15px;
 }
-
-/* Login */
 
 .login-container {
   min-height: 100vh;
@@ -240,8 +226,6 @@ button:hover {
 .login-box button {
   width: 100%;
 }
-
-/* Responsive */
 
 @media (max-width: 900px) {
   .card-container,
