@@ -253,3 +253,32 @@ button:hover {
   color: #2563eb;
   font-weight: 600;
 }
+/* Navbar */
+.navbar {
+  height: 65px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 25px;
+  margin-bottom: 25px;
+}
+
+.navbar h2 {
+  font-size: 20px;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.navbar-right span {
+  color: #555;
+}
+.company-card p {
+  margin-bottom: 8px;
+  color: #666;
+}

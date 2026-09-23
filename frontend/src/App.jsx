@@ -1,62 +1,9 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
+import Navbar from "./components/Navbar";
+import CompanyCard from "./components/CompanyCard";
 import "./App.css";
-
-function Dashboard() {
-  return (
-    <div>
-      <h1 className="page-title">Welcome to WorkSphere</h1>
-      <p className="page-subtitle">
-        Your AI-powered career intelligence platform
-      </p>
-
-      <div className="card-container">
-        <div className="card">
-          <h3>Resume Score</h3>
-          <div className="card-value">86%</div>
-        </div>
-
-        <div className="card">
-          <h3>Recommended Companies</h3>
-          <div className="card-value">12</div>
-        </div>
-
-        <div className="card">
-          <h3>Skills Matched</h3>
-          <div className="card-value">18</div>
-        </div>
-      </div>
-
-      <div className="section">
-        <h2>Recommended Companies</h2>
-
-        <div className="company-grid">
-          <div className="company-card">
-            <h3>Microsoft</h3>
-            <p>Technology</p>
-            <p>Culture Score: 4.5/5</p>
-            <button>View Details</button>
-          </div>
-
-          <div className="company-card">
-            <h3>Google</h3>
-            <p>Technology</p>
-            <p>Culture Score: 4.6/5</p>
-            <button>View Details</button>
-          </div>
-
-          <div className="company-card">
-            <h3>Adobe</h3>
-            <p>Technology</p>
-            <p>Culture Score: 4.4/5</p>
-            <button>View Details</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function Companies() {
   return (
@@ -232,28 +179,32 @@ function Profile() {
 }
 
 function App() {
+
   return (
     <BrowserRouter>
       <div className="app">
 
+        {/* Sidebar */}
         <Sidebar />
 
+        {/* Main Content */}
         <main className="main-content">
+
+          {/* Top Navbar */}
+          <Navbar />
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/companies" element={<Companies />} />
-            <Route path="/recommendations" element={<Recommendations />} />
-            <Route path="/resume-analysis" element={<ResumeAnalysis />} />
-            <Route path="/skill-gap" element={<SkillGap />} />
-            <Route path="/compare" element={<Compare />} />
-            <Route path="/ai-assistant" element={<AIAssistant />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/" element={<Dashboard />}/>
+            <Route path="/companies" element={<Companies />}/>
+            <Route path="/recommendations" element={<Recommendations />}/>
+            <Route path="/resume-analysis" element={<ResumeAnalysis />}/>
+            <Route path="/skill-gap"  element={<SkillGap />}/>
+            <Route  path="/compare"  element={<Compare />}/>
+            <Route  path="/ai-assistant"  element={<AIAssistant />}/>
+            <Route path="/profile" element={<Profile />}/>
           </Routes>
         </main>
-
       </div>
     </BrowserRouter>
   );
 }
-
 export default App;
