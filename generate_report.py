@@ -10,16 +10,13 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, KeepTogether
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-# -------------------------------------------------------------
-# CONFIGURATION: Institution & Department Details
-# -------------------------------------------------------------
-COLLEGE_NAME = "Swami Keshvanand Institute of Technology,Management & Gramothan, Jaipur"
-DEPARTMENT_NAME = "Department of Computer Science & Engineering"
-# -------------------------------------------------------------
+COLLEGE_NAME = 'Swami Keshvanand Institute of Technology,Management & Gramothan, Jaipur'
+DEPARTMENT_NAME = 'Department of Computer Science & Engineering'
+
 def get_repo_info():
-    """Extracts the exact repository name and branch reliably in GitHub Codespaces."""
-    repo_name = "Project-Repository"
-    branch_name = "main"
+    """Extracts repository name and current branch."""
+    repo_name = 'Project-Repository'
+    branch_name = 'main'
     try:
         root_path = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], encoding='utf-8').strip()
         repo_name = os.path.basename(root_path)
@@ -33,40 +30,74 @@ def get_repo_info():
         branch_name = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], encoding='utf-8').strip()
     except Exception:
         pass
-    return repo_name, branch_name
-def get_git_metrics(interval="weekly"):
+    return (repo_name, branch_name)
+
+def get_git_metrics(interval='weekly', start_date=None, end_date=None):
     """
     Parses Git commit logs.
-    Supported intervals: 'weekly', 'monthly', 'final'
+
+    Supported intervals:
+        weekly
+        monthly
+        final
+        range
+
+    For range:
+        start_date and end_date must be in YYYY-MM-DD format.
     """
     today = datetime.date.today()
     git_args = ['git', 'log', '--no-merges', '--pretty=format:COMMIT|||%h|||%an|||%ad|||%s', '--date=short', '--numstat']
-    
-    if interval == "weekly":
-        since_date = (today - datetime.timedelta(days=7)).strftime("%Y-%m-%d")
-        git_args.append(f"--since={since_date}")
-        scope_title = f"Last 7 Days (Since {since_date})"
-    elif interval == "monthly":
-        since_date = (today - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
-        git_args.append(f"--since={since_date}")
-        scope_title = f"Last 30 Days (Since {since_date})"
+    if interval == 'weekly':
+        start = today - datetime.timedelta(days=6)
+        end = today
+        start_str = start.strftime('%Y-%m-%d')
+        end_str = end.strftime('%Y-%m-%d')
+        git_args.append(f'--since={start_str} 00:00:00')
+        git_args.append(f'--until={end_str} 23:59:59')
+        scope_title = f"Weekly Window: {start.strftime('%d-%m-%Y')} to {end.strftime('%d-%m-%Y')}"
+    elif interval == 'monthly':
+        start = today - datetime.timedelta(days=29)
+        end = today
+        start_str = start.strftime('%Y-%m-%d')
+        end_str = end.strftime('%Y-%m-%d')
+        git_args.append(f'--since={start_str} 00:00:00')
+        git_args.append(f'--until={end_str} 23:59:59')
+        scope_title = f"Last 30 Days: {start.strftime('%d-%m-%Y')} to {end.strftime('%d-%m-%Y')}"
+    elif interval == 'range':
+        if not start_date or not end_date:
+            print('[ERROR] Range mode requires both start date and end date.')
+            print('Usage: python generate_report.py range YYYY-MM-DD YYYY-MM-DD')
+            return (None, None, None, None)
+        try:
+            start = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
+            end = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            print('[ERROR] Invalid date format.')
+            print('Use YYYY-MM-DD format.')
+            print('Example: 2026-08-14')
+            return (None, None, None, None)
+        if start > end:
+            print('[ERROR] Start date cannot be after end date.')
+            return (None, None, None, None)
+        git_args.append(f"--since={start.strftime('%Y-%m-%d')} 00:00:00")
+        git_args.append(f"--until={end.strftime('%Y-%m-%d')} 23:59:59")
+        scope_title = f"Historical Window: {start.strftime('%d-%m-%Y')} to {end.strftime('%d-%m-%Y')}"
     else:
-        scope_title = "Complete Project Lifecycle (All Commits)"
+        scope_title = 'Complete Project Lifecycle (All Commits)'
     try:
         raw_output = subprocess.check_output(git_args, encoding='utf-8', errors='replace')
     except subprocess.CalledProcessError:
-        print("[ERROR] Git command failed. Please ensure you are inside a Git repository.")
-        return None, None, None, scope_title
-    students = defaultdict(lambda: {"commits": 0, "added": 0, "deleted": 0, "active_days": set()})
+        print('[ERROR] Git command failed. Please ensure you are inside a Git repository.')
+        return (None, None, None, scope_title)
+    students = defaultdict(lambda: {'commits': 0, 'added': 0, 'deleted': 0, 'active_days': set()})
     timeline_activity = defaultdict(lambda: defaultdict(int))
     student_logs = defaultdict(list)
     current_author = None
     current_date_str = None
-
     for line in raw_output.strip().split('\n'):
         line = line.strip()
         if not line:
-            continue        
+            continue
         if line.startswith('COMMIT|||'):
             parts = line.split('|||')
             if len(parts) >= 5:
@@ -76,70 +107,61 @@ def get_git_metrics(interval="weekly"):
                 msg = parts[4].strip()
             else:
                 continue
-                
-            # --- IGNORE AUTOMATED BOTS ---
-            if "bot" in author.lower() or "github-actions" in author.lower():
+            if 'bot' in author.lower() or 'github-actions' in author.lower():
                 current_author = None
                 continue
-            # -----------------------------
-            
             current_author = author
             current_date_str = date_str
-            
-            students[current_author]["commits"] += 1
-            students[current_author]["active_days"].add(current_date_str)
+            students[current_author]['commits'] += 1
+            students[current_author]['active_days'].add(current_date_str)
             student_logs[current_author].append((date_str, sha, msg))
-            
             try:
-                dt = datetime.datetime.strptime(current_date_str, "%Y-%m-%d").date()
-                if interval == "weekly":
-                    period_key = dt.strftime("%a (%b %d)")
-                elif interval == "monthly":
-                    period_key = f"{dt.isocalendar()[0]}-W{dt.isocalendar()[1]:02d}"
+                dt = datetime.datetime.strptime(current_date_str, '%Y-%m-%d').date()
+                if interval in ('weekly', 'range'):
+                    period_key = dt.strftime('%a (%b %d)')
+                elif interval == 'monthly':
+                    period_key = f'{dt.isocalendar()[0]}-W{dt.isocalendar()[1]:02d}'
                 else:
-                    period_key = dt.strftime("%Y-%m")
+                    period_key = dt.strftime('%Y-%m')
                 timeline_activity[period_key][current_author] += 1
             except Exception:
                 pass
-
-        elif current_author and not line.startswith('COMMIT|||'):
+        elif current_author and (not line.startswith('COMMIT|||')):
             parts = line.split()
             if len(parts) >= 2 and parts[0].isdigit() and parts[1].isdigit():
-                students[current_author]["added"] += int(parts[0])
-                students[current_author]["deleted"] += int(parts[1])
-
-    return students, timeline_activity, student_logs, scope_title
+                students[current_author]['added'] += int(parts[0])
+                students[current_author]['deleted'] += int(parts[1])
+    return (students, timeline_activity, student_logs, scope_title)
 
 def create_charts(students, timeline_activity, interval):
     """Generates visual workload and trend charts."""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 3.8))
     authors = list(students.keys())
     periods = sorted(timeline_activity.keys())
-
-    # 1. Timeline Line Chart
     if periods and authors:
         for author in authors:
             counts = [timeline_activity[p].get(author, 0) for p in periods]
             ax1.plot(periods, counts, marker='o', linewidth=2, label=author)
-        ax1.set_title(f"Commit Timeline ({interval.capitalize()})", fontsize=10, fontweight='bold')
-        ax1.set_ylabel("Commits")
+        if interval == 'range':
+            chart_title = 'Commit Timeline (Historical Range)'
+        else:
+            chart_title = f'Commit Timeline ({interval.capitalize()})'
+        ax1.set_title(chart_title, fontsize=10, fontweight='bold')
+        ax1.set_ylabel('Commits')
         ax1.tick_params(axis='x', rotation=30)
         ax1.grid(True, linestyle='--', alpha=0.5)
         ax1.legend(fontsize=8)
     else:
-        ax1.text(0.5, 0.5, "No commits found in this interval", ha='center', va='center')
-
-    # 2. Net LOC Bar Chart
+        ax1.text(0.5, 0.5, 'No commits found in this interval', ha='center', va='center')
     if authors:
-        net_loc = [students[a]["added"] - students[a]["deleted"] for a in authors]
+        net_loc = [students[a]['added'] - students[a]['deleted'] for a in authors]
         colors_list = ['#4E79A7', '#F28E2B', '#E15759', '#76B7B2', '#59A14F']
         ax2.bar(authors, net_loc, color=colors_list[:len(authors)], width=0.45)
-        ax2.set_title("Net Lines of Code Written", fontsize=10, fontweight='bold')
-        ax2.set_ylabel("LOC (Added - Deleted)")
+        ax2.set_title('Net Lines of Code Written', fontsize=10, fontweight='bold')
+        ax2.set_ylabel('LOC (Added - Deleted)')
         ax2.grid(axis='y', linestyle='--', alpha=0.5)
     else:
-        ax2.text(0.5, 0.5, "No LOC changes recorded", ha='center', va='center')
-
+        ax2.text(0.5, 0.5, 'No LOC changes recorded', ha='center', va='center')
     plt.tight_layout()
     img_buffer = io.BytesIO()
     plt.savefig(img_buffer, format='png', dpi=200)
@@ -147,222 +169,130 @@ def create_charts(students, timeline_activity, interval):
     img_buffer.seek(0)
     return Image(img_buffer, width=500, height=170)
 
-def generate_pdf(interval="weekly"):
+def generate_pdf(interval='weekly', start_date=None, end_date=None):
     repo_name, branch_name = get_repo_info()
-    students, timeline_activity, student_logs, scope_title = get_git_metrics(interval)
-
+    students, timeline_activity, student_logs, scope_title = get_git_metrics(interval, start_date, end_date)
     if students is None:
         return
-
-    date_stamp = datetime.date.today().strftime("%Y-%m-%d")
-    
-    if interval == "weekly":
-        report_title = "Weekly Progress Report (Form-3)"
-        doc_name = f"{repo_name}_Weekly_Progress_Report_Form-3_{date_stamp}.pdf"
-    elif interval == "monthly":
-        report_title = "Monthly Progress Report (Form-3)"
-        doc_name = f"{repo_name}_Monthly_Progress_Report_Form-3_{date_stamp}.pdf"
+    today = datetime.date.today()
+    date_stamp = today.strftime('%Y-%m-%d')
+    if interval == 'weekly':
+        report_title = 'Weekly Progress Report (Form-3)'
+        doc_name = f'{repo_name}_Weekly_Progress_Report_Form-3_{date_stamp}.pdf'
+    elif interval == 'range':
+        report_title = 'Weekly Progress Report (Form-3)'
+        doc_name = f'{repo_name}_Weekly_Progress_Report_Form-3_{start_date}_to_{end_date}.pdf'
+    elif interval == 'monthly':
+        report_title = 'Monthly Progress Report (Form-3)'
+        doc_name = f'{repo_name}_Monthly_Progress_Report_Form-3_{date_stamp}.pdf'
     else:
-        report_title = "Final Project Evaluation Report"
-        doc_name = f"{repo_name}_Final_Report_{date_stamp}.pdf"
-
-    doc = SimpleDocTemplate(
-        doc_name,
-        pagesize=letter,
-        rightMargin=36,
-        leftMargin=36,
-        topMargin=30,
-        bottomMargin=30
-    )
-
+        report_title = 'Final Project Evaluation Report'
+        doc_name = f'{repo_name}_Final_Report_{date_stamp}.pdf'
+    doc = SimpleDocTemplate(doc_name, pagesize=letter, rightMargin=36, leftMargin=36, topMargin=30, bottomMargin=30)
     styles = getSampleStyleSheet()
-    
-    college_style = ParagraphStyle(
-        'CollegeStyle', parent=styles['Heading1'],
-        fontSize=13.5, leading=17, textColor=colors.HexColor("#0F172A"), alignment=1, spaceAfter=2
-    )
-    dept_style = ParagraphStyle(
-        'DeptStyle', parent=styles['Normal'],
-        fontSize=9.5, leading=13, textColor=colors.HexColor("#475569"), alignment=1, spaceAfter=6
-    )
-    title_style = ParagraphStyle(
-        'TitleStyle', parent=styles['Heading2'],
-        fontSize=13, leading=17, textColor=colors.HexColor("#1A365D"), alignment=1, spaceAfter=5
-    )
-    repo_style = ParagraphStyle(
-        'RepoStyle', parent=styles['Normal'],
-        fontSize=9.5, leading=14, textColor=colors.HexColor("#0F172A"), spaceAfter=3
-    )
-    meta_style = ParagraphStyle(
-        'MetaStyle', parent=styles['Normal'],
-        fontSize=8.5, textColor=colors.HexColor("#64748B"), spaceAfter=8
-    )
-    section_style = ParagraphStyle(
-        'SectionStyle', parent=styles['Heading2'],
-        fontSize=10.5, leading=14, textColor=colors.HexColor("#0F172A"), spaceBefore=7, spaceAfter=4
-    )
-    sub_section_style = ParagraphStyle(
-        'SubSectionStyle', parent=styles['Heading3'],
-        fontSize=9, leading=12, textColor=colors.HexColor("#2563EB"), spaceBefore=5, spaceAfter=2
-    )
-    msg_style = ParagraphStyle(
-        'MsgStyle', parent=styles['Normal'],
-        fontSize=8, leading=10, textColor=colors.HexColor("#1E293B")
-    )
-    meta_cell_style = ParagraphStyle(
-        'MetaCellStyle', parent=styles['Normal'],
-        fontSize=8, leading=10, textColor=colors.HexColor("#475569"), alignment=1
-    )
-    marks_style = ParagraphStyle(
-        'MarksStyle', parent=styles['Normal'],
-        fontSize=9, leading=12, textColor=colors.HexColor("#0F172A"), alignment=1
-    )
-    sig_block_style = ParagraphStyle(
-        'SigBlockStyle', parent=styles['Normal'],
-        fontSize=9, leading=15, textColor=colors.HexColor("#0F172A"), alignment=0
-    )
+    college_style = ParagraphStyle('CollegeStyle', parent=styles['Heading1'], fontSize=13.5, leading=17, textColor=colors.HexColor('#0F172A'), alignment=1, spaceAfter=2)
+    dept_style = ParagraphStyle('DeptStyle', parent=styles['Normal'], fontSize=9.5, leading=13, textColor=colors.HexColor('#475569'), alignment=1, spaceAfter=6)
+    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading2'], fontSize=13, leading=17, textColor=colors.HexColor('#1A365D'), alignment=1, spaceAfter=5)
+    repo_style = ParagraphStyle('RepoStyle', parent=styles['Normal'], fontSize=9.5, leading=14, textColor=colors.HexColor('#0F172A'), spaceAfter=3)
+    meta_style = ParagraphStyle('MetaStyle', parent=styles['Normal'], fontSize=8.5, textColor=colors.HexColor('#64748B'), spaceAfter=8)
+    section_style = ParagraphStyle('SectionStyle', parent=styles['Heading2'], fontSize=10.5, leading=14, textColor=colors.HexColor('#0F172A'), spaceBefore=7, spaceAfter=4)
+    sub_section_style = ParagraphStyle('SubSectionStyle', parent=styles['Heading3'], fontSize=9, leading=12, textColor=colors.HexColor('#2563EB'), spaceBefore=5, spaceAfter=2)
+    msg_style = ParagraphStyle('MsgStyle', parent=styles['Normal'], fontSize=8, leading=10, textColor=colors.HexColor('#1E293B'))
+    meta_cell_style = ParagraphStyle('MetaCellStyle', parent=styles['Normal'], fontSize=8, leading=10, textColor=colors.HexColor('#475569'), alignment=1)
+    marks_style = ParagraphStyle('MarksStyle', parent=styles['Normal'], fontSize=9, leading=12, textColor=colors.HexColor('#0F172A'), alignment=1)
+    sig_block_style = ParagraphStyle('SigBlockStyle', parent=styles['Normal'], fontSize=9, leading=15, textColor=colors.HexColor('#0F172A'), alignment=0)
     story = []
-
-    # 1. Header with College & Department Name and Form-3 Title
-    story.append(Paragraph(f"<b>{html.escape(COLLEGE_NAME)}</b>", college_style))
-    story.append(Paragraph(f"<b>{html.escape(DEPARTMENT_NAME)}</b>", dept_style))
-    story.append(Paragraph(f"<u><b>{report_title}</b></u>", title_style))
+    story.append(Paragraph(f'<b>{html.escape(COLLEGE_NAME)}</b>', college_style))
+    story.append(Paragraph(f'<b>{html.escape(DEPARTMENT_NAME)}</b>', dept_style))
+    story.append(Paragraph(f'<u><b>{report_title}</b></u>', title_style))
     story.append(Spacer(1, 3))
-
-    # 2. Metadata (Repo, Branch, Scope, Date)
     story.append(Paragraph(f"<b>Project Repository:</b> <font color='#2563EB'><b>{html.escape(repo_name)}</b></font> &nbsp;|&nbsp; <b>Branch:</b> <code>{html.escape(branch_name)}</code>", repo_style))
-    story.append(Paragraph(f"<b>Evaluation Window:</b> {scope_title} &nbsp;|&nbsp; <b>Generated On:</b> {datetime.date.today().strftime('%B %d, %Y')}", meta_style))
-
-    # 3. Individual Summary Table
-    story.append(Paragraph("1. Individual Contribution Breakdown", section_style))
-    total_commits = sum(data["commits"] for data in students.values())
-    table_data = [["Student Name", "Commits (%)", "Lines Added", "Lines Deleted", "Net LOC", "Active Days"]]
-    
+    story.append(Paragraph(f"<b>Evaluation Window:</b> {scope_title} &nbsp;|&nbsp; <b>Generated On:</b> {today.strftime('%B %d, %Y')}", meta_style))
+    story.append(Paragraph('1. Individual Contribution Breakdown', section_style))
+    total_commits = sum((data['commits'] for data in students.values()))
+    table_data = [['Student Name', 'Commits (%)', 'Lines Added', 'Lines Deleted', 'Net LOC', 'Active Days']]
     if students:
         for name, data in students.items():
-            pct = (data["commits"] / total_commits * 100) if total_commits > 0 else 0
-            net = data["added"] - data["deleted"]
-            table_data.append([
-                html.escape(name),
-                f"{data['commits']} ({pct:.1f}%)",
-                f"+{data['added']:,}",
-                f"-{data['deleted']:,}",
-                f"{net:,}",
-                f"{len(data['active_days'])} days"
-            ])
+            pct = data['commits'] / total_commits * 100 if total_commits > 0 else 0
+            net = data['added'] - data['deleted']
+            table_data.append([html.escape(name), f"{data['commits']} ({pct:.1f}%)", f"+{data['added']:,}", f"-{data['deleted']:,}", f'{net:,}', f"{len(data['active_days'])} days"])
     else:
-        table_data.append(["No commits found in this period. Run with 'final' to see all commits.", "-", "-", "-", "-", "-"])
-
+        table_data.append(['No commits found in this period.', '-', '-', '-', '-', '-'])
     table = Table(table_data, colWidths=[120, 80, 80, 80, 80, 100])
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1E293B")),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('ALIGN', (0, 1), (0, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 3.5),
-        ('TOPPADDING', (0, 0), (-1, -1), 3.5),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor("#F8FAFC")]),
-    ]))
+    table.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1E293B')), ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke), ('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('ALIGN', (0, 1), (0, -1), 'LEFT'), ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), ('FONTSIZE', (0, 0), (-1, -1), 8), ('BOTTOMPADDING', (0, 0), (-1, -1), 3.5), ('TOPPADDING', (0, 0), (-1, -1), 3.5), ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#CBD5E1')), ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F8FAFC')])]))
     story.append(table)
     story.append(Spacer(1, 6))
-
-    # 4. Visual Charts
-    story.append(Paragraph("2. Visual Trends & Volume", section_style))
+    story.append(Paragraph('2. Visual Trends & Volume', section_style))
     chart_image = create_charts(students, timeline_activity, interval)
     story.append(chart_image)
     story.append(Spacer(1, 6))
-
-    # 5. Detailed Commit Logs per Student WITH Vertically Merged Mentor Marks
-    story.append(Paragraph(f"3. Detailed Commit Logs & Mentor Evaluation ({interval.capitalize()})", section_style))
+    if interval == 'range':
+        log_interval_title = 'Weekly Historical Range'
+    else:
+        log_interval_title = interval.capitalize()
+    story.append(Paragraph(f'3. Detailed Commit Logs & Mentor Evaluation ({log_interval_title})', section_style))
     if not student_logs:
-        story.append(Paragraph("<i>No commit logs found for this timeframe.</i>", styles['Normal']))
+        story.append(Paragraph('<i>No commit logs found for this timeframe.</i>', styles['Normal']))
     else:
         for student_name, logs in student_logs.items():
             student_section = []
-            student_section.append(Paragraph(f"<b>Student:</b> {html.escape(student_name)} — <i>{len(logs)} commit(s)</i>", sub_section_style))
-            
-            log_table_data = [["Date", "Hash", "Commit Message", "Mentor Marks (/10)"]]
-            
-            # Place the clean marking line in the first row
+            student_section.append(Paragraph(f'<b>Student:</b> {html.escape(student_name)} — <i>{len(logs)} commit(s)</i>', sub_section_style))
+            log_table_data = [['Date', 'Hash', 'Commit Message', 'Mentor Marks (/10)']]
             first_date, first_sha, first_msg = logs[0]
-            safe_msg = html.escape(first_msg) if first_msg else "(No commit message)"
-            log_table_data.append([
-                Paragraph(first_date, meta_cell_style),
-                Paragraph(f"<code>{first_sha}</code>", meta_cell_style),
-                Paragraph(safe_msg, msg_style),
-                Paragraph("<b>_____ / 10</b>", marks_style)
-            ])
-            
-            # Subsequent commit rows have blank placeholder for merged cell
+            safe_msg = html.escape(first_msg) if first_msg else '(No commit message)'
+            log_table_data.append([Paragraph(first_date, meta_cell_style), Paragraph(f'<code>{first_sha}</code>', meta_cell_style), Paragraph(safe_msg, msg_style), Paragraph('<b>_____ / 10</b>', marks_style)])
             for date_val, sha_val, msg_val in logs[1:]:
-                safe_msg = html.escape(msg_val) if msg_val else "(No commit message)"
-                log_table_data.append([
-                    Paragraph(date_val, meta_cell_style),
-                    Paragraph(f"<code>{sha_val}</code>", meta_cell_style),
-                    Paragraph(safe_msg, msg_style),
-                    ""
-                ])
-            
+                safe_msg = html.escape(msg_val) if msg_val else '(No commit message)'
+                log_table_data.append([Paragraph(date_val, meta_cell_style), Paragraph(f'<code>{sha_val}</code>', meta_cell_style), Paragraph(safe_msg, msg_style), ''])
             num_rows = len(log_table_data)
             log_table = Table(log_table_data, colWidths=[65, 50, 335, 90])
-            
-            t_style = [
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#475569")),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('ALIGN', (3, 0), (3, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, -1), 7.5),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 2.5),
-                ('TOPPADDING', (0, 0), (-1, -1), 2.5),
-                ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
-                ('ROWBACKGROUNDS', (0, 1), (2, -1), [colors.white, colors.HexColor("#F8FAFC")]),
-                ('SPAN', (3, 1), (3, num_rows - 1)),              # Vertically merge mentor marks column
-                ('VALIGN', (3, 1), (3, num_rows - 1), 'MIDDLE'),     # Vertically center the marks line
-                ('BACKGROUND', (3, 1), (3, num_rows - 1), colors.HexColor("#FEF3C7")), # Accent for marks area
-            ]
-            
+            t_style = [('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#475569')), ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke), ('ALIGN', (0, 0), (-1, -1), 'LEFT'), ('ALIGN', (3, 0), (3, -1), 'CENTER'), ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), ('FONTSIZE', (0, 0), (-1, -1), 7.5), ('BOTTOMPADDING', (0, 0), (-1, -1), 2.5), ('TOPPADDING', (0, 0), (-1, -1), 2.5), ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#CBD5E1')), ('ROWBACKGROUNDS', (0, 1), (2, -1), [colors.white, colors.HexColor('#F8FAFC')]), ('SPAN', (3, 1), (3, num_rows - 1)), ('VALIGN', (3, 1), (3, num_rows - 1), 'MIDDLE'), ('BACKGROUND', (3, 1), (3, num_rows - 1), colors.HexColor('#FEF3C7'))]
             log_table.setStyle(TableStyle(t_style))
             student_section.append(log_table)
             student_section.append(Spacer(1, 5))
             story.append(KeepTogether(student_section))
-
-    # 6. Symmetrical Signatures
     story.append(Spacer(1, 16))
-    
-    mentor_cell = [
-        Paragraph("<b>Name:</b> ___________________________", sig_block_style),
-        Paragraph("<b>Designation:</b> Project Mentor", sig_block_style),
-        Spacer(1, 6),
-        Paragraph("<b>Signature:</b> ________________________", sig_block_style),
-    ]
-    
-    coordinator_cell = [
-        Paragraph("<b>Name:</b> ___________________________", sig_block_style),
-        Paragraph("<b>Designation:</b> Lab Coordinator", sig_block_style),
-        Spacer(1, 6),
-        Paragraph("<b>Signature:</b> ________________________", sig_block_style),
-    ]
-
+    mentor_cell = [Paragraph('<b>Name:</b> ___________________________', sig_block_style), Paragraph('<b>Designation:</b> Project Mentor', sig_block_style), Spacer(1, 6), Paragraph('<b>Signature:</b> ________________________', sig_block_style)]
+    coordinator_cell = [Paragraph('<b>Name:</b> ___________________________', sig_block_style), Paragraph('<b>Designation:</b> Lab Coordinator', sig_block_style), Spacer(1, 6), Paragraph('<b>Signature:</b> ________________________', sig_block_style)]
     sig_table = Table([[mentor_cell, coordinator_cell]], colWidths=[270, 270])
-    sig_table.setStyle(TableStyle([
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('LEFTPADDING', (0, 0), (0, -1), 0),
-        ('LEFTPADDING', (1, 0), (1, -1), 40),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
-        ('TOPPADDING', (0, 0), (-1, -1), 0),
-    ]))
-    
+    sig_table.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LEFTPADDING', (0, 0), (0, -1), 0), ('LEFTPADDING', (1, 0), (1, -1), 40), ('RIGHTPADDING', (0, 0), (-1, -1), 0), ('BOTTOMPADDING', (0, 0), (-1, -1), 0), ('TOPPADDING', (0, 0), (-1, -1), 0)]))
     story.append(KeepTogether(sig_table))
-
     doc.build(story)
-    print(f"\n[SUCCESS] Generated: {doc_name}")
-    print(f" -> Found {len(students)} student(s) and {total_commits} total commits.")
-
-if __name__ == "__main__":
-    chosen_interval = sys.argv[1].lower() if len(sys.argv) > 1 else "weekly"
-    generate_pdf(chosen_interval)
+    print(f'\n[SUCCESS] Generated: {doc_name}')
+    print(f' -> Found {len(students)} student(s) and {total_commits} total commits.')
+if __name__ == '__main__':
+    if len(sys.argv) == 1:
+        generate_pdf('weekly')
+    else:
+        chosen_interval = sys.argv[1].lower()
+        if chosen_interval == 'range':
+            if len(sys.argv) != 4:
+                print('\n[ERROR] Incorrect number of arguments.')
+                print('\nCorrect usage:')
+                print('python generate_report.py range YYYY-MM-DD YYYY-MM-DD')
+                print('\nExample:')
+                print('python generate_report.py range 2026-08-14 2026-08-20')
+                sys.exit(1)
+            start_date = sys.argv[2]
+            end_date = sys.argv[3]
+            try:
+                start = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
+                end = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
+            except ValueError:
+                print('\n[ERROR] Date must be in YYYY-MM-DD format.')
+                print('Example: 2026-08-14')
+                sys.exit(1)
+            if start > end:
+                print('\n[ERROR] Start date cannot be after end date.')
+                sys.exit(1)
+            generate_pdf('range', start_date, end_date)
+        elif chosen_interval in ('weekly', 'monthly', 'final'):
+            generate_pdf(chosen_interval)
+        else:
+            print('\n[ERROR] Unknown report type.')
+            print('\nAvailable options:')
+            print('  python generate_report.py weekly')
+            print('  python generate_report.py monthly')
+            print('  python generate_report.py final')
+            print('  python generate_report.py range YYYY-MM-DD YYYY-MM-DD')
+            sys.exit(1)
