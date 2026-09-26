@@ -1,48 +1,44 @@
 import pandas as pd
-def recommend_companies(
-    company_df,
-    user_skills,
-    preferred_attributes=None,
-    top_n=5
-):
-    user_skills = {
-        skill.strip().lower()
-        for skill in user_skills
-    }
+def calculate_preference_score(row, preferences):
+    score = 0
+    total_weight = 0
 
-    if preferred_attributes is None:
-        preferred_attributes = {}
+    for attribute, weight in preferences.items():
 
-    df = company_df.copy()
-
-    # Start with company intelligence score
-    df["recommendation_score"] = (
-        df["company_intelligence_score"] * 0.7
-    )
-
-    # Add preference-based score
-    for attribute, weight in preferred_attributes.items():
-
-        if attribute in df.columns:
-            values = pd.to_numeric(
-                df[attribute],
+        if attribute in row.index:
+            value = pd.to_numeric(
+                row[attribute],
                 errors="coerce"
             )
 
-            if values.notna().any():
+            if pd.notna(value):
+                score += value * weight
+                total_weight += weight
 
-                min_value = values.min()
-                max_value = values.max()
+    if total_weight == 0:
+        return 0
+    return score / total_weight
+def recommend_companies(
+    company_df,
+    user_profile,
+    top_n=5
+):
+    df = company_df.copy()
 
-                if max_value != min_value:
+    preferences = user_profile.get_preferences()
 
-                    normalized = (
-                        values - min_value
-                    ) / (max_value - min_value)
+    df["preference_score"] = df.apply(
+        lambda row: calculate_preference_score(
+            row,
+            preferences
+        ),
+        axis=1
+    )
 
-                    df["recommendation_score"] += (
-                        normalized.fillna(0) * weight
-                    )
+    df["recommendation_score"] = (
+        df["company_intelligence_score"] * 0.7
+        + df["preference_score"] * 0.3
+    )
 
     df = df.sort_values(
         "recommendation_score",
