@@ -3,3 +3,8 @@ pypdf>=4.0.0
 
 # Sprint 3 - NLP tokenisation for skill extraction
 spacy>=3.7.0
+
+# Job-postings training and resume-to-job matching
+pandas>=2.0.0
+scikit-learn>=1.3.0
+joblib>=1.3.0
