@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
 import CompanyCard from "./components/CompanyCard";
+import Dashboard from "./pages/Dashboard";
 import "./App.css";
 
 function Companies() {
