@@ -1,3 +1,3 @@
-from mongodb import test_connection
-
-test_connection()
+from .mongodb import test_connection
+if __name__ == "__main__":
+    test_connection()
