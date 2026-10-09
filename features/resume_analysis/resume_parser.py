@@ -5,7 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from .education_extractor import extract_education
+from .experience_extractor import extract_experience
 from .preprocessing import SECTION_HEADERS, clean_text, contact_details, section_lines, split_lines
+from .skill_extractor import extract_skills
 
 
 class ResumeParser:
@@ -18,17 +21,27 @@ class ResumeParser:
         if not path.is_file():
             raise FileNotFoundError(f"Resume not found: {path}")
 
+        # PyMuPDF is the primary extractor selected for the project.  pypdf is
+        # retained as a lightweight fallback so the feature remains usable if
+        # only the original Sprint 2 dependency is installed.
         try:
-            from pypdf import PdfReader
-        except ImportError as error:
-            raise RuntimeError(
-                "PDF extraction requires pypdf. Install dependencies with "
-                "`pip install -r backend/requirement.txt`."
-            ) from error
+            import fitz
 
-        try:
-            reader = PdfReader(str(path))
-            pages = [page.extract_text() or "" for page in reader.pages]
+            with fitz.open(path) as document:
+                pages = [page.get_text("text") for page in document]
+        except ImportError:
+            try:
+                from pypdf import PdfReader
+            except ImportError as error:
+                raise RuntimeError(
+                    "PDF extraction requires PyMuPDF or pypdf. Install dependencies with "
+                    "`pip install -r features/resume_analysis/requirements.txt`."
+                ) from error
+            try:
+                reader = PdfReader(str(path))
+                pages = [page.extract_text() or "" for page in reader.pages]
+            except Exception as error:
+                raise ValueError(f"Could not read the PDF resume: {path.name}") from error
         except Exception as error:
             raise ValueError(f"Could not read the PDF resume: {path.name}") from error
 
@@ -47,12 +60,12 @@ class ResumeParser:
             **contact,
             "raw_text": raw_text,
             "clean_text": clean_resume_text,
-            # These sections are intentionally text-only until Sprint 3 NLP extraction.
-            "education": section_lines(clean_resume_text, SECTION_HEADERS["education"]),
-            "experience": section_lines(clean_resume_text, SECTION_HEADERS["experience"]),
+            # Sprint 3: return usable extracted entities, not just raw sections.
+            "education": extract_education(clean_resume_text),
+            "experience": extract_experience(clean_resume_text),
             "projects": section_lines(clean_resume_text, SECTION_HEADERS["projects"]),
             "certifications": section_lines(clean_resume_text, SECTION_HEADERS["certifications"]),
-            "skills": [],
+            "skills": extract_skills(clean_resume_text),
         }
         return profile
 
