@@ -14,7 +14,16 @@ pip install -r features/resume_analysis/requirements.txt
 python -m features.resume_analysis.main path/to/resume.pdf
 ```
 
-The output is a JSON profile with raw/clean text, contact details, recognised skills, education, experience, projects, and certifications.
+The output is a JSON profile with raw/clean text, contact details, recognised
+skills, education, experience, projects, and certifications. The module uses
+PyMuPDF for PDF text extraction (with a pypdf fallback), and then applies the
+local NLP skill vocabulary plus education and experience extractors.
+
+The runnable command is:
+
+```bash
+python -m features.resume_analysis.main path/to/resume.pdf
+```
 
 ## Job-postings model
 
