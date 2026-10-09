@@ -1,5 +1,6 @@
 # Sprint 2 - PDF processing
 pypdf>=4.0.0
+PyMuPDF>=1.24.0
 
 # Sprint 3 - NLP tokenisation for skill extraction
 spacy>=3.7.0
