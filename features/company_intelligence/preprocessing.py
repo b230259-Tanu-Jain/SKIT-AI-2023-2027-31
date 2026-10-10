@@ -28,9 +28,7 @@ def clean_text(text):
 
 
 def load_and_prepare_data(file_path):
-
     df = pd.read_csv(file_path)
-
     df.columns = (
         df.columns
         .str.strip()

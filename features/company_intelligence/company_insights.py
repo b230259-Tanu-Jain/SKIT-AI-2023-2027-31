@@ -10,20 +10,13 @@ RATING_COLUMNS = {
     "comp_benefits": "Compensation & Benefits",
     "senior_mgmt": "Senior Management"
 }
-
-
 MIN_REVIEWS = 10
-
-
 def calculate_company_insights(df):
-
     df = df.copy()
-
     # Convert BERT star score to 0-100 scale
     df["bert_score"] = (
         (df["bert_star_score"] - 1) / 4 * 100
     )
-
     available_ratings = [
         column
         for column in RATING_COLUMNS
@@ -87,7 +80,6 @@ def calculate_company_insights(df):
 
 
 def rank_companies(company_df):
-
     company_df = company_df.sort_values(
         by=[
             "company_intelligence_score",
