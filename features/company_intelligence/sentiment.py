@@ -1,12 +1,8 @@
 import torch
 from transformers import pipeline
-
-
 MODEL_NAME = (
     "nlptown/bert-base-multilingual-uncased-sentiment"
 )
-
-
 class BertSentimentAnalyzer:
     def __init__(self):
         self.device = (
