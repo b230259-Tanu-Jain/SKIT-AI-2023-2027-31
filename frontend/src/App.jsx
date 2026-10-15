@@ -4,6 +4,7 @@ import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
 import CompanyCard from "./components/CompanyCard";
 import Dashboard from "./pages/Dashboard";
+import Companies from "./pages/Companies";
 import "./App.css";
 
 function Companies() {
@@ -53,7 +54,6 @@ function Recommendations() {
       <p className="page-subtitle">
         Companies and roles matched to your skills and preferences.
       </p>
-
       <div className="section">
         <h2>Top Recommendations</h2>
         <p>Personalized recommendations will appear here.</p>
@@ -61,7 +61,6 @@ function Recommendations() {
     </div>
   );
 }
-
 function ResumeAnalysis() {
   return (
     <div>
@@ -69,7 +68,6 @@ function ResumeAnalysis() {
       <p className="page-subtitle">
         Upload your resume to analyze your skills and profile.
       </p>
-
       <div className="section">
         <h2>Resume Upload</h2>
         <input type="file" />
@@ -80,7 +78,6 @@ function ResumeAnalysis() {
     </div>
   );
 }
-
 function SkillGap() {
   return (
     <div>
@@ -97,19 +94,14 @@ function SkillGap() {
           className="search-box"
           placeholder="Enter target role..."
         />
-
         <h3>Matched Skills</h3>
-
         <div className="skill-list">
           <span className="skill">Python</span>
           <span className="skill">SQL</span>
           <span className="skill">Machine Learning</span>
         </div>
-
         <br />
-
         <h3>Missing Skills</h3>
-
         <div className="skill-list">
           <span className="skill">Docker</span>
           <span className="skill">AWS</span>
@@ -118,7 +110,6 @@ function SkillGap() {
     </div>
   );
 }
-
 function Compare() {
   return (
     <div>
@@ -126,7 +117,6 @@ function Compare() {
       <p className="page-subtitle">
         Compare companies across different career factors.
       </p>
-
       <div className="section">
         <h2>Company Comparison</h2>
         <p>Select companies to compare their ratings and insights.</p>
@@ -134,7 +124,6 @@ function Compare() {
     </div>
   );
 }
-
 function AIAssistant() {
   return (
     <div>
@@ -142,25 +131,20 @@ function AIAssistant() {
       <p className="page-subtitle">
         Ask questions about companies, jobs and your career.
       </p>
-
       <div className="chat-container">
         <p>How can I help you with your career?</p>
-
         <input
           type="text"
           className="chat-input"
           placeholder="Ask something..."
         />
-
         <br />
         <br />
-
         <button>Send</button>
       </div>
     </div>
   );
 }
-
 function Profile() {
   return (
     <div>
@@ -168,7 +152,6 @@ function Profile() {
       <p className="page-subtitle">
         Manage your skills, preferences and career goals.
       </p>
-
       <div className="section">
         <h2>Career Profile</h2>
         <p><strong>Name:</strong> User</p>
@@ -178,16 +161,12 @@ function Profile() {
     </div>
   );
 }
-
 function App() {
-
   return (
     <BrowserRouter>
       <div className="app">
-
         {/* Sidebar */}
         <Sidebar />
-
         {/* Main Content */}
         <main className="main-content">
 

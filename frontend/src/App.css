@@ -274,11 +274,106 @@ button:hover {
   align-items: center;
   gap: 15px;
 }
-
 .navbar-right span {
   color: #555;
 }
 .company-card p {
   margin-bottom: 8px;
   color: #666;
+}
+.dashboard {
+  padding: 28px;
+  color: #1e293b;
+}
+.dashboard-heading,
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.dashboard-heading h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+.dashboard-heading p,
+.dashboard-company-card p {
+  color: #64748b;
+  margin: 0;
+}
+.primary-btn {
+  background: #2563eb;
+  color: white;
+  text-decoration: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+}
+
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 28px 0;
+}
+.stat-card,
+.dashboard-company-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 22px;
+}
+
+.stat-card span {
+  color: #64748b;
+}
+.stat-card h2 {
+  margin: 12px 0 0;
+  font-size: 30px;
+}
+.dashboard-section {
+  margin-top: 30px;
+}
+.section-heading {
+  margin-bottom: 16px;
+}
+.section-heading h2 {
+  font-size: 21px;
+}
+.section-heading a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.dashboard-company-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.dashboard-company-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dashboard-company-card h3 {
+  margin: 0 0 8px;
+}
+.company-score strong {
+  color: #16a34a;
+  font-size: 24px;
+}
+.company-score span {
+  color: #64748b;
+}
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 18px;
+  }
+  .dashboard-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .dashboard-stats,
+  .dashboard-company-list {
+    grid-template-columns: 1fr;
+  }
 }
