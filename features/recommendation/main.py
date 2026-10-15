@@ -1,51 +1,69 @@
-import os
 import pandas as pd
-from recommendation import recommend_companies
-from user_profile import UserProfile
-BASE_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../..")
-)
-COMPANY_FILE = os.path.join(
-    BASE_DIR,
-    "data",
-    "processed",
-    "company_insights.csv"
-)
+from features.company_data.mongodb import companies
+from features.recommendation.user_profile import UserProfile
+from features.recommendation.recommendation import recommend_companies
+def get_rating(prompt):
+    while True:
+        try:
+            value = float(input(prompt))
+            if 0 <= value <= 100:
+                return value
+
+            print("Enter a value between 0 and 100.")
+        except ValueError:
+            print("Please enter a valid number.")
 def main():
-    company_df = pd.read_csv(COMPANY_FILE)
-    user = UserProfile(
-        skills=[
-            "Python",
-            "SQL",
-            "Machine Learning"
-        ],
-        work_life_balance=5,
-        culture_values=5,
-        career_opp=4,
-        comp_benefits=4
+    print("\n=== WorkSphere Personalised Recommendation ===\n")
+
+    skills = input(
+        "Enter your skills separated by commas: "
     )
-    recommendations = recommend_companies(
-        company_df,
-        user,
-        top_n=5
+    profile = UserProfile(
+        skills=skills,
+        work_life_balance=get_rating(
+            "Desired work-life balance (0-100): "
+        ),
+        culture_values=get_rating(
+            "Desired culture rating (0-100): "
+        ),
+        career_opp=get_rating(
+            "Desired career opportunities (0-100): "
+        ),
+        comp_benefits=get_rating(
+            "Desired compensation and benefits (0-100): "
+        )
     )
-    columns = [
-        "rank",
+
+    company_df = pd.DataFrame(
+        list(companies.find({}, {"_id": 0}))
+    )
+
+    if company_df.empty:
+        print("No company data found in MongoDB.")
+        return
+
+    results = recommend_companies(
+        company_df, profile, top_n=5
+    )
+
+    if results.empty:
+        print("No companies have valid intelligence scores.")
+        return
+
+    print("\n--- Top 5 Recommended Companies ---\n")
+
+    display_columns = [
         "firm",
         "company_intelligence_score",
         "preference_score",
         "recommendation_score"
     ]
-    columns = [
-        column
-        for column in columns
-        if column in recommendations.columns
+    display_columns = [
+        column for column in display_columns
+        if column in results.columns
     ]
-    print("\nRecommended Companies:\n")
     print(
-        recommendations[columns].to_string(
-            index=False
-        )
+        results[display_columns].to_string(index=False)
     )
 if __name__ == "__main__":
     main()
