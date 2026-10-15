@@ -16,7 +16,14 @@ def _split_skills(value: object) -> list[str]:
 
 def load_job_role_skills(file_path: str | Path) -> pd.DataFrame:
     """Load and validate the role-skill reference data for future comparisons."""
-    dataset = pd.read_csv(file_path)
+    path = Path(file_path)
+    # The project data is tab-separated although its historical filename uses
+    # a ``.csv`` extension. Detect the header delimiter so both this file and
+    # regular comma-separated exports load correctly.
+    with path.open(encoding="utf-8-sig") as source:
+        header = source.readline()
+    delimiter = "\t" if "\t" in header else ","
+    dataset = pd.read_csv(path, sep=delimiter, encoding="utf-8-sig")
     dataset.columns = dataset.columns.str.strip().str.lower()
     missing = REQUIRED_COLUMNS - set(dataset.columns)
     if missing:

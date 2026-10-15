@@ -1,0 +1,52 @@
+{
+  "model_path": "features/resume_analysis/models/job_postings_matcher.joblib",
+  "training_rows": 1167,
+  "validation_rows": 234,
+  "accuracy": 0.9359,
+  "macro_f1": 0.9368,
+  "classification_report": {
+    "BUSINESS-DEVELOPMENT": {
+      "precision": 0.8653846153846154,
+      "recall": 0.9375,
+      "f1-score": 0.9,
+      "support": 48.0
+    },
+    "FINANCE": {
+      "precision": 0.9782608695652174,
+      "recall": 0.9574468085106383,
+      "f1-score": 0.967741935483871,
+      "support": 47.0
+    },
+    "HR": {
+      "precision": 1.0,
+      "recall": 0.9772727272727273,
+      "f1-score": 0.9885057471264368,
+      "support": 44.0
+    },
+    "INFORMATION-TECHNOLOGY": {
+      "precision": 0.9583333333333334,
+      "recall": 0.9583333333333334,
+      "f1-score": 0.9583333333333334,
+      "support": 48.0
+    },
+    "SALES": {
+      "precision": 0.8888888888888888,
+      "recall": 0.851063829787234,
+      "f1-score": 0.8695652173913043,
+      "support": 47.0
+    },
+    "accuracy": 0.9358974358974359,
+    "macro avg": {
+      "precision": 0.938173541434411,
+      "recall": 0.9363233397807866,
+      "f1-score": 0.9368292466669891,
+      "support": 234.0
+    },
+    "weighted avg": {
+      "precision": 0.9371559837000194,
+      "recall": 0.9358974358974359,
+      "f1-score": 0.9361012352935747,
+      "support": 234.0
+    }
+  }
+}
