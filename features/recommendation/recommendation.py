@@ -1,48 +1,57 @@
 import pandas as pd
+PREFERENCE_WEIGHT = 0.30
+INTELLIGENCE_WEIGHT = 0.70
 def calculate_preference_score(row, preferences):
-    score = 0
-    total_weight = 0
+    scores = []
 
-    for attribute, weight in preferences.items():
+    for attribute, desired_rating in preferences.items():
+        if attribute not in row.index:
+            continue
 
-        if attribute in row.index:
-            value = pd.to_numeric(
-                row[attribute],
-                errors="coerce"
+        actual_rating = pd.to_numeric(
+            row[attribute], errors="coerce"
+        )
+
+        if pd.notna(actual_rating):
+            actual_rating = max(0, min(100, actual_rating))
+            scores.append(
+                100 - abs(actual_rating - desired_rating)
             )
 
-            if pd.notna(value):
-                score += value * weight
-                total_weight += weight
+    return sum(scores) / len(scores) if scores else 0
 
-    if total_weight == 0:
-        return 0
-    return score / total_weight
-def recommend_companies(
-    company_df,
-    user_profile,
-    top_n=5
-):
+def recommend_companies(company_df, user_profile, top_n=5):
+    if top_n < 1:
+        raise ValueError("top_n must be at least 1.")
+
+    if "company_intelligence_score" not in company_df.columns:
+        raise ValueError(
+            "Missing company_intelligence_score column."
+        )
+
     df = company_df.copy()
-
-    preferences = user_profile.get_preferences()
-
+    df["company_intelligence_score"] = pd.to_numeric(
+        df["company_intelligence_score"], errors="coerce"
+    )
+    df = df.dropna(
+        subset=["company_intelligence_score"]
+    ).copy()
+    if df.empty:
+        return df
     df["preference_score"] = df.apply(
         lambda row: calculate_preference_score(
-            row,
-            preferences
+            row, user_profile.get_preferences()
         ),
         axis=1
     )
-
     df["recommendation_score"] = (
-        df["company_intelligence_score"] * 0.7
-        + df["preference_score"] * 0.3
-    )
+        df["company_intelligence_score"] * INTELLIGENCE_WEIGHT
+        + df["preference_score"] * PREFERENCE_WEIGHT
+    ).round(2)
 
-    df = df.sort_values(
-        "recommendation_score",
+    return df.sort_values(
+        ["recommendation_score", "review_count"]
+        if "review_count" in df.columns
+        else ["recommendation_score"],
         ascending=False
-    )
-
-    return df.head(top_n)
+    ).head(top_n).reset_index(drop=True)
