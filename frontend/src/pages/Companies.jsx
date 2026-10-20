@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
-import "./Companies.css";
+import CompanyCard from "../components/CompanyCard";
+import "../App.css";
 const companyData = [
   {
     name: "Microsoft",
@@ -35,7 +36,7 @@ function Companies() {
   const filteredCompanies = useMemo(() => {
     return companyData
       .filter((company) =>
-        company.name.toLowerCase().includes(search.toLowerCase())
+        company.name.toLowerCase().includes(search.trim().toLowerCase())
       )
       .filter((company) => company.score >= minScore)
       .sort((a, b) =>
@@ -54,11 +55,13 @@ function Companies() {
         <input
           type="search"
           placeholder="Search companies..."
+          aria-label="Search companies"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
         <select
+          aria-label="Minimum company score"
           value={minScore}
           onChange={(e) => setMinScore(Number(e.target.value))}
         >
@@ -69,6 +72,7 @@ function Companies() {
         </select>
 
         <select
+          aria-label="Sort companies by score"
           value={sortOrder}
           onChange={(e) => setSortOrder(e.target.value)}
         >
@@ -79,27 +83,15 @@ function Companies() {
 
       <div className="companies-grid">
         {filteredCompanies.map((company) => (
-          <article className="company-card" key={company.name}>
-            <div className="company-card-heading">
-              <h2>{company.name}</h2>
-              <span>{company.score}/100</span>
-            </div>
-
-            <p>Employee reviews: {company.reviews.toLocaleString()}</p>
-
-            <div className="rating-row">
-              <span>Work-life balance</span>
-              <strong>{company.workLife}/100</strong>
-            </div>
-            <div className="rating-row">
-              <span>Culture & values</span>
-              <strong>{company.culture}/100</strong>
-            </div>
-            <div className="rating-row">
-              <span>Career opportunities</span>
-              <strong>{company.career}/100</strong>
-            </div>
-          </article>
+          <CompanyCard
+            key={company.name}
+            name={company.name}
+            score={company.score}
+            reviews={company.reviews}
+            workLife={company.workLife}
+            culture={company.culture}
+            career={company.career}
+          />
         ))}
       </div>
 
@@ -109,4 +101,5 @@ function Companies() {
     </div>
   );
 }
+
 export default Companies;

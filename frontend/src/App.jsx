@@ -2,51 +2,9 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
-import CompanyCard from "./components/CompanyCard";
 import Dashboard from "./pages/Dashboard";
 import Companies from "./pages/Companies";
 import "./App.css";
-
-function Companies() {
-  return (
-    <div>
-      <h1 className="page-title">Companies</h1>
-      <p className="page-subtitle">
-        Explore companies based on culture, work-life balance and career opportunities.
-      </p>
-
-      <input
-        type="text"
-        className="search-box"
-        placeholder="Search companies..."
-      />
-
-      <div className="company-grid">
-        <div className="company-card">
-          <h3>Microsoft</h3>
-          <p>Technology</p>
-          <p>Overall Rating: 4.5/5</p>
-          <button>View Details</button>
-        </div>
-
-        <div className="company-card">
-          <h3>Google</h3>
-          <p>Technology</p>
-          <p>Overall Rating: 4.6/5</p>
-          <button>View Details</button>
-        </div>
-
-        <div className="company-card">
-          <h3>Adobe</h3>
-          <p>Technology</p>
-          <p>Overall Rating: 4.4/5</p>
-          <button>View Details</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function Recommendations() {
   return (
     <div>
