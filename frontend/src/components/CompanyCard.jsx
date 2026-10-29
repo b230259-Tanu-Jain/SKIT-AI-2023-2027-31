@@ -1,5 +1,11 @@
 import React from "react";
-import "../App.css";
+function formatRating(value) {
+  if (value === null || value === undefined || value === "") {
+    return "N/A";
+  }
+  const rating = Number(value);
+  return Number.isFinite(rating) ? `${rating}/100` : "N/A";
+}
 function CompanyCard({
   name,
   score,
@@ -14,27 +20,31 @@ function CompanyCard({
     ["Career opportunities", career]
   ];
 
+  const reviewCount = Number(reviews);
+  const displayedReviews =
+    Number.isFinite(reviewCount) && reviewCount >= 0
+      ? reviewCount.toLocaleString()
+      : "N/A";
+
   return (
     <article className="company-card">
       <div className="company-card-heading">
-        <h2>{name}</h2>
-        <span>
-          {score == null ? "N/A" : `${score}/100`}
-        </span>
+        <h3>{name}</h3>
+        <span className="company-score">{formatRating(score)}</span>
       </div>
 
-      <p>
-        Employee reviews: {Number(reviews || 0).toLocaleString()}
+      <p className="review-count">
+        Employee reviews: {displayedReviews}
       </p>
 
-      {ratings.map(([label, value]) => (
-        <div className="rating-row" key={label}>
-          <span>{label}</span>
-          <strong>
-            {value == null || value === "" ? "N/A" : `${value}/100`}
-          </strong>
-        </div>
-      ))}
+      <div className="company-ratings">
+        {ratings.map(([label, value]) => (
+          <div className="rating-row" key={label}>
+            <span>{label}</span>
+            <strong>{formatRating(value)}</strong>
+          </div>
+        ))}
+      </div>
     </article>
   );
 }

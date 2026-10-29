@@ -1,3 +1,5 @@
+
+/* ---------- Global ---------- */
 * {
   margin: 0;
   padding: 0;
@@ -11,11 +13,21 @@ body {
 }
 
 a {
-  text-decoration: none;
   color: inherit;
+  text-decoration: none;
 }
 
+button,
+input,
+select {
+  font: inherit;
+}
 
+button {
+  cursor: pointer;
+}
+
+/* ---------- Main layout ---------- */
 .app {
   display: flex;
   min-height: 100vh;
@@ -23,13 +35,15 @@ a {
 
 .sidebar {
   width: 240px;
-  background: #ffffff;
+  background: #fff;
   border-right: 1px solid #e5e7eb;
   padding: 25px 15px;
   position: fixed;
   top: 0;
   bottom: 0;
   left: 0;
+  overflow-y: auto;
+  z-index: 10;
 }
 
 .logo {
@@ -46,25 +60,59 @@ a {
 }
 
 .nav-link {
+  display: block;
   padding: 12px 15px;
   border-radius: 8px;
   color: #555;
   font-size: 15px;
 }
 
-.nav-link:hover {
-  background: #f0f2f7;
-  color: #111;
+.nav-link:hover,
+.nav-link.active {
+  background: #e8eefc;
+  color: #2563eb;
 }
 
-/* Main Content */
+.nav-link.active {
+  font-weight: 600;
+}
 
 .main-content {
   margin-left: 240px;
   width: calc(100% - 240px);
+  min-width: 0;
   padding: 30px;
 }
 
+/* ---------- Navbar ---------- */
+.navbar {
+  min-height: 65px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 25px;
+  margin-bottom: 25px;
+  border-radius: 10px;
+}
+
+.navbar h2 {
+  font-size: 20px;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.navbar-right span {
+  color: #555;
+}
+
+/* ---------- Common page elements ---------- */
 .page-title {
   font-size: 28px;
   margin-bottom: 8px;
@@ -75,19 +123,111 @@ a {
   margin-bottom: 25px;
 }
 
+.section {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 25px;
+}
 
+.section h2 {
+  margin-bottom: 15px;
+}
+
+button {
+  border: none;
+  border-radius: 7px;
+  padding: 10px 18px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 14px;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.primary-btn {
+  display: inline-block;
+  background: #2563eb;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.primary-btn:hover {
+  background: #1d4ed8;
+}
+
+.secondary-btn {
+  background: #e8eefc;
+  color: #1d4ed8;
+}
+
+.secondary-btn:hover {
+  background: #dbe5fc;
+}
+
+/* ---------- Dashboard ---------- */
+.dashboard,
+.companies-page {
+  width: 100%;
+  min-width: 0;
+}
+
+.dashboard {
+  padding: 10px 0;
+  color: #1e293b;
+}
+
+.dashboard-heading,
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dashboard-heading {
+  margin-bottom: 28px;
+}
+
+.dashboard-heading h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.dashboard-heading p {
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.dashboard-stats,
 .card-container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
   margin-bottom: 30px;
 }
 
+.stat-card,
 .card {
-  background: white;
-  border: 1px solid #e5e7eb;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 22px;
+}
+
+.stat-card span {
+  color: #64748b;
+}
+
+.stat-card h2 {
+  margin-top: 12px;
+  font-size: 30px;
 }
 
 .card h3 {
@@ -101,21 +241,157 @@ a {
   font-weight: bold;
 }
 
+.dashboard-section {
+  margin-top: 30px;
+}
+
+.section-heading {
+  margin-bottom: 16px;
+}
+
+.section-heading h2 {
+  font-size: 21px;
+}
+
+.section-heading a {
+  color: #2563eb;
+}
+
+.dashboard-company-list,
+.companies-grid,
 .company-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
 }
 
+/* ---------- Shared CompanyCard ---------- */
 .company-card {
-  background: white;
-  border: 1px solid #e5e7eb;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 20px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
 }
 
+.company-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.company-card-heading h3,
 .company-card h3 {
-  margin-bottom: 10px;
+  font-size: 18px;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.company-score {
+  flex-shrink: 0;
+  display: inline-block;
+  color: #166534;
+  background: #dcfce7;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.review-count {
+  color: #64748b;
+  font-size: 14px;
+  margin: 14px 0;
+}
+
+.company-ratings {
+  margin-top: 8px;
+}
+
+.rating-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid #f1f5f9;
+  font-size: 14px;
+}
+
+.rating-row span {
+  color: #475569;
+}
+
+.rating-row strong {
+  text-align: right;
+  white-space: nowrap;
+  color: #1e293b;
+}
+
+/* ---------- Company search, filters and results ---------- */
+.companies-page > h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.companies-page > .page-subtitle {
+  color: #64748b;
+  margin-bottom: 22px;
+}
+
+.company-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 22px 0 16px;
+}
+
+.company-filters input,
+.company-filters select {
+  min-width: 150px;
+  padding: 11px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #1e293b;
+}
+
+.company-filters input {
+  flex: 1;
+}
+
+.company-filters input:focus,
+.company-filters select:focus,
+.search-box:focus,
+.chat-input:focus {
+  outline: 2px solid #93c5fd;
+  outline-offset: 1px;
+}
+
+.results-count {
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.empty-results {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #64748b;
+}
+
+/* ---------- Legacy company and general grid classes ---------- */
+.company-grid {
+  margin-bottom: 30px;
 }
 
 .company-card p {
@@ -127,21 +403,23 @@ a {
   margin-top: 12px;
 }
 
-button {
-  border: none;
-  border-radius: 7px;
-  padding: 10px 18px;
-  cursor: pointer;
-  font-size: 14px;
-  background: #2563eb;
-  color: white;
+.dashboard-company-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 22px;
 }
 
-button:hover {
-  opacity: 0.9;
+.dashboard-company-card p {
+  color: #64748b;
+  margin: 0;
 }
 
+.dashboard-company-card h3 {
+  margin-bottom: 8px;
+}
 
+/* ---------- Inputs, skills and assistant ---------- */
 .search-box {
   width: 100%;
   max-width: 450px;
@@ -149,19 +427,6 @@ button:hover {
   border: 1px solid #ddd;
   border-radius: 8px;
   margin-bottom: 25px;
-  font-size: 14px;
-}
-
-.section {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 25px;
-  margin-bottom: 25px;
-}
-
-.section h2 {
-  margin-bottom: 15px;
 }
 
 .skill-list {
@@ -178,11 +443,11 @@ button:hover {
 }
 
 .chat-container {
-  background: white;
+  max-width: 800px;
+  background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 20px;
-  max-width: 800px;
 }
 
 .chat-input {
@@ -193,6 +458,7 @@ button:hover {
   margin-top: 15px;
 }
 
+/* ---------- Login ---------- */
 .login-container {
   min-height: 100vh;
   display: flex;
@@ -201,8 +467,8 @@ button:hover {
 }
 
 .login-box {
-  width: 400px;
-  background: white;
+  width: min(400px, 100%);
+  background: #fff;
   padding: 35px;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
@@ -224,156 +490,67 @@ button:hover {
   width: 100%;
 }
 
-@media (max-width: 900px) {
-  .card-container,
+/* ---------- Responsive layouts ---------- */
+@media (max-width: 1100px) {
+  .dashboard-company-list,
+  .companies-grid,
   .company-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .main-content {
+    padding: 22px;
+  }
+
+  .dashboard-stats,
+  .card-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 650px) {
   .sidebar {
     width: 180px;
+    padding: 20px 10px;
   }
 
   .main-content {
     margin-left: 180px;
     width: calc(100% - 180px);
-    padding: 20px;
+    padding: 14px;
   }
 
-  .card-container,
-  .company-grid {
-    grid-template-columns: 1fr;
+  .navbar {
+    padding: 12px;
+    flex-wrap: wrap;
   }
-}
 
-.nav-link.active {
-  background: #e8eefc;
-  color: #2563eb;
-  font-weight: 600;
-}
-/* Navbar */
-.navbar {
-  height: 65px;
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 25px;
-  margin-bottom: 25px;
-}
-
-.navbar h2 {
-  font-size: 20px;
-}
-
-.navbar-right {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-.navbar-right span {
-  color: #555;
-}
-.company-card p {
-  margin-bottom: 8px;
-  color: #666;
-}
-.dashboard {
-  padding: 28px;
-  color: #1e293b;
-}
-.dashboard-heading,
-.section-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-.dashboard-heading h1 {
-  margin: 0 0 8px;
-  font-size: 28px;
-}
-.dashboard-heading p,
-.dashboard-company-card p {
-  color: #64748b;
-  margin: 0;
-}
-.primary-btn {
-  background: #2563eb;
-  color: white;
-  text-decoration: none;
-  padding: 12px 18px;
-  border-radius: 8px;
-}
-
-.dashboard-stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-  margin: 28px 0;
-}
-.stat-card,
-.dashboard-company-card {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 22px;
-}
-
-.stat-card span {
-  color: #64748b;
-}
-.stat-card h2 {
-  margin: 12px 0 0;
-  font-size: 30px;
-}
-.dashboard-section {
-  margin-top: 30px;
-}
-.section-heading {
-  margin-bottom: 16px;
-}
-.section-heading h2 {
-  font-size: 21px;
-}
-.section-heading a {
-  color: #2563eb;
-  text-decoration: none;
-}
-.dashboard-company-list {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-}
-.dashboard-company-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.dashboard-company-card h3 {
-  margin: 0 0 8px;
-}
-.company-score strong {
-  color: #16a34a;
-  font-size: 24px;
-}
-.company-score span {
-  color: #64748b;
-}
-@media (max-width: 768px) {
-  .dashboard {
-    padding: 18px;
-  }
   .dashboard-heading {
     align-items: flex-start;
     flex-direction: column;
   }
+
   .dashboard-stats,
-  .dashboard-company-list {
+  .card-container,
+  .dashboard-company-list,
+  .companies-grid,
+  .company-grid {
     grid-template-columns: 1fr;
+  }
+
+  .company-filters {
+    flex-direction: column;
+  }
+
+  .company-filters input,
+  .company-filters select {
+    width: 100%;
+  }
+
+  .dashboard-heading h1,
+  .companies-page > h1 {
+    font-size: 24px;
   }
 }
