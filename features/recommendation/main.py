@@ -56,12 +56,14 @@ def main():
     role_results = recommend_job_roles(job_df, profile, top_n=5)
 
     role_columns = [
-        col for col in [
-            "job_role", "role", "title",
-            "skill_match_score", "matched_skills", "missing_skills"
-        ]
-        if col in role_results.columns
+    col for col in [
+        "job_role", "role", "title",
+        "skill_match_score", "similarity_score",
+        "role_suitability_score",
+        "matched_skills", "missing_skills"
     ]
+    if col in role_results.columns
+]
     print("\n--- Top 5 Job-Role Matches ---\n")
     if role_results.empty:
         print("No matching job roles found.")
