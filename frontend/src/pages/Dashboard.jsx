@@ -1,39 +1,38 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "../App.css";;
 import CompanyCard from "../components/CompanyCard";
 
 const companies = [
   {
     name: "Microsoft",
     score: 92,
+    reviews: 1250,
     workLife: 88,
     culture: 90,
-    career: 91,
-    reviews: 1250
+    career: 91
   },
   {
     name: "Google",
     score: 90,
+    reviews: 1100,
     workLife: 85,
     culture: 92,
-    career: 94,
-    reviews: 1100
+    career: 94
   },
   {
     name: "Adobe",
     score: 87,
+    reviews: 850,
     workLife: 89,
     culture: 88,
-    career: 85,
-    reviews: 850
+    career: 85
   }
 ];
 
 function Dashboard() {
   return (
     <div className="dashboard">
-      <div className="dashboard-heading">
+      <section className="dashboard-heading">
         <div>
           <h1>Welcome to WorkSphere</h1>
           <p>Discover companies that match your career goals.</p>
@@ -42,24 +41,24 @@ function Dashboard() {
         <Link to="/companies" className="primary-btn">
           Explore Companies
         </Link>
-      </div>
+      </section>
 
-      <div className="dashboard-stats">
-        <div className="stat-card">
+      <section className="dashboard-stats" aria-label="Platform statistics">
+        <article className="stat-card">
           <span>Companies Listed</span>
           <h2>91</h2>
-        </div>
+        </article>
 
-        <div className="stat-card">
+        <article className="stat-card">
           <span>Employee Reviews</span>
           <h2>20,000</h2>
-        </div>
+        </article>
 
-        <div className="stat-card">
+        <article className="stat-card">
           <span>Job Roles</span>
           <h2>1,167</h2>
-        </div>
-      </div>
+        </article>
+      </section>
 
       <section className="dashboard-section">
         <div className="section-heading">
@@ -69,15 +68,7 @@ function Dashboard() {
 
         <div className="dashboard-company-list">
           {companies.map((company) => (
-            <CompanyCard
-              key={company.name}
-              name={company.name}
-              score={company.score}
-              reviews={company.reviews}
-              workLife={company.workLife}
-              culture={company.culture}
-              career={company.career}
-            />
+            <CompanyCard key={company.name} {...company} />
           ))}
         </div>
       </section>
