@@ -8,12 +8,12 @@ class UserProfile:
         comp_benefits=70
     ):
         if isinstance(skills, str):
-            skills = skills.split(",")
+         skills = skills.split(",")
 
         self.skills = {
-            skill.strip().lower()
-            for skill in skills
-            if skill.strip()
+        str(skill).strip().lower()
+        for skill in (skills or [])
+        if skill is not None and str(skill).strip()
         }
 
         self.preferences = {
