@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-from .preprocessing import SECTION_HEADERS, section_lines
+from preprocessing import SECTION_HEADERS, section_lines
 
 
 ROLE_WORDS = ("intern", "engineer", "developer", "analyst", "designer", "manager", "trainee", "associate")
