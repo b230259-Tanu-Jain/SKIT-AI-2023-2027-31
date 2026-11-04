@@ -1,11 +1,20 @@
 # Resume Intelligence - Vanshika Choudhary
 
-## Status as of 6 October 2026
+## Status as of 4 November 2026
 
 Completed work in this folder:
 
-- Sprint 2: PDF resume text extraction and cleaning with PyPDF.
-- Sprint 3 (in progress): NLP-assisted technical skill extraction, plus education and experience extraction.
+- PDF resume text extraction and cleaning (PyMuPDF with pypdf fallback).
+- NLP-assisted technical skill extraction, plus education, experience, project,
+  certification, and basic contact extraction.
+- Career category prediction and job-posting similarity retrieval using the
+  saved TF-IDF/LinearSVC model. The saved metrics report 1,167 training rows
+  and 0.936 macro F1 on a 234-row holdout; the original postings CSV is not in
+  this repository, so reproducing the metrics requires obtaining that exact
+  permitted dataset.
+- Career-role matching is in its Form 2 window through 10 November. Skill-gap
+  analysis is scheduled 1 November-5 December and has an initial exact,
+  normalized comparison implementation in `features/skill_gap/main.py`.
 
 Run from the project root:
 
@@ -51,4 +60,6 @@ python -m features.resume_analysis.job_matcher recommend \
 
 The model output contains the predicted category plus matching job IDs, titles,
 skills and similarity scores. The original `job_matcher.joblib` is retained;
-use the new `job_postings_matcher.joblib` artifact with this module.
+use the new `job_postings_matcher.joblib` artifact with this module. See
+`MODEL_TRAINING_GUIDE.md` for dataset preparation, resource estimates,
+evaluation advice, and when to consider pretrained embeddings.
