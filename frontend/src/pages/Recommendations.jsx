@@ -1,7 +1,6 @@
-
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../App.css";
-
 const sampleCompanies = [
   {
     name: "Microsoft",
@@ -9,6 +8,7 @@ const sampleCompanies = [
     workLife: 88,
     culture: 90,
     career: 91,
+    reviews: 1250,
     reason: "Strong overall company intelligence score."
   },
   {
@@ -17,6 +17,7 @@ const sampleCompanies = [
     workLife: 85,
     culture: 92,
     career: 94,
+    reviews: 1100,
     reason: "Strong culture and career opportunity ratings."
   },
   {
@@ -25,11 +26,13 @@ const sampleCompanies = [
     workLife: 89,
     culture: 88,
     career: 85,
+    reviews: 850,
     reason: "Good work-life balance and workplace ratings."
   }
 ];
 
 export default function Recommendations() {
+  const navigate = useNavigate();
   const [skills, setSkills] = useState("Python, Java, SQL");
   const [workLife, setWorkLife] = useState(80);
   const [culture, setCulture] = useState(80);
@@ -46,6 +49,19 @@ export default function Recommendations() {
     ];
 
     const ranked = sampleCompanies.map((company) => {
+      const values = [
+        company.score,
+        company.workLife,
+        company.culture,
+        company.career
+      ];
+
+      if (!values.every((value) =>
+        Number.isFinite(value) && value >= 0 && value <= 100
+      )) {
+        return null;
+      }
+
       const preferenceScore =
         preferences.reduce(
           (total, [key, desired]) =>
@@ -60,10 +76,12 @@ export default function Recommendations() {
           (company.score * 0.7 + preferenceScore * 0.3).toFixed(2)
         )
       };
-    });
+    }).filter(Boolean);
 
     setResults(
-      ranked.sort((a, b) => b.recommendationScore - a.recommendationScore)
+      ranked.sort((a, b) =>
+        b.recommendationScore - a.recommendationScore
+      )
     );
   }
 
@@ -86,7 +104,9 @@ export default function Recommendations() {
           placeholder="Python, Java, SQL"
         />
 
-        <label htmlFor="workLife">Desired work-life balance: {workLife}</label>
+        <label htmlFor="workLife">
+          Desired work-life balance: {workLife}
+        </label>
         <input
           id="workLife"
           type="range"
@@ -96,7 +116,9 @@ export default function Recommendations() {
           onChange={(event) => setWorkLife(Number(event.target.value))}
         />
 
-        <label htmlFor="culture">Desired culture: {culture}</label>
+        <label htmlFor="culture">
+          Desired culture: {culture}
+        </label>
         <input
           id="culture"
           type="range"
@@ -106,7 +128,9 @@ export default function Recommendations() {
           onChange={(event) => setCulture(Number(event.target.value))}
         />
 
-        <label htmlFor="career">Desired career opportunities: {career}</label>
+        <label htmlFor="career">
+          Desired career opportunities: {career}
+        </label>
         <input
           id="career"
           type="range"
@@ -126,13 +150,34 @@ export default function Recommendations() {
           <p>Set your preferences and click Generate Recommendations.</p>
         ) : (
           <div className="company-grid">
-            {results.map((company) => (
+            {results.map((company, index) => (
               <article className="company-card" key={company.name}>
+                <span>Rank #{index + 1}</span>
                 <h3>{company.name}</h3>
-                <p>Recommendation score: {company.recommendationScore}/100</p>
-                <p>Company intelligence: {company.score}/100</p>
-                <p>Preference match: {company.preferenceScore}/100</p>
+
+                <p>
+                  Company Intelligence: <strong>{company.score}/100</strong>
+                </p>
+                <p>
+                  Preference Match: <strong>{company.preferenceScore}/100</strong>
+                </p>
+                <p>
+                  Final Recommendation:{" "}
+                  <strong>{company.recommendationScore}/100</strong>
+                </p>
+
                 <p>{company.reason}</p>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate("/company-details", {
+                      state: { company }
+                    })
+                  }
+                >
+                  View Details
+                </button>
               </article>
             ))}
           </div>
