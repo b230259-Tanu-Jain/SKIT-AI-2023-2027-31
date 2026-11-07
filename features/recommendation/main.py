@@ -61,14 +61,12 @@ def main():
         print("No matching job roles found.")
     else:
         role_columns = [
-    "job_role",
-    "skill_match_score",
-    "similarity_score",
-    "role_suitability_score",
-    "matched_skills",
-    "missing_skills"
-]
-
+        "job_role",
+        "skill_match_score",
+        "similarity_score",
+        "role_suitability_score",
+        "matched_skills",
+        "missing_skills"]
         print(role_results[role_columns].to_string(index=False))
 
 if __name__ == "__main__":
