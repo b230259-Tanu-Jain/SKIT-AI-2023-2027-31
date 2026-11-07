@@ -4,8 +4,7 @@ import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import Recommendations from "./pages/Recommendations";
 import Companies from "./pages/Companies";
-import "./App.css";
-
+import CompanyDetails from "./pages/CompanyDetails";
 export default function App() {
   return (
     <BrowserRouter>
@@ -17,6 +16,7 @@ export default function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/companies" element={<Companies />} />
             <Route path="/recommendations" element={<Recommendations />} />
+            <Route path="/company-details" element={<CompanyDetails />} />
           </Routes>
         </main>
       </div>

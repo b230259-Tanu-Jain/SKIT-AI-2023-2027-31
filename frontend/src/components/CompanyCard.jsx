@@ -1,19 +1,15 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+
 function formatRating(value) {
-  if (value === null || value === undefined || value === "") {
-    return "N/A";
-  }
+  if (value === null || value === undefined || value === "") return "N/A";
   const rating = Number(value);
   return Number.isFinite(rating) ? `${rating}/100` : "N/A";
 }
-function CompanyCard({
-  name,
-  score,
-  reviews,
-  workLife,
-  culture,
-  career
-}) {
+
+function CompanyCard({ name, score, reviews, workLife, culture, career }) {
+  const navigate = useNavigate();
+
   const ratings = [
     ["Work-life balance", workLife],
     ["Culture & values", culture],
@@ -26,8 +22,21 @@ function CompanyCard({
       ? reviewCount.toLocaleString()
       : "N/A";
 
+  const company = { name, score, reviews, workLife, culture, career };
+
   return (
-    <article className="company-card">
+    <article
+      className="company-card"
+      onClick={() => navigate("/company-details", { state: { company } })}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          navigate("/company-details", { state: { company } });
+        }
+      }}
+    >
       <div className="company-card-heading">
         <h3>{name}</h3>
         <span className="company-score">{formatRating(score)}</span>
@@ -45,8 +54,9 @@ function CompanyCard({
           </div>
         ))}
       </div>
+
+      <p className="view-details">View Company Details →</p>
     </article>
   );
 }
-
 export default CompanyCard;
