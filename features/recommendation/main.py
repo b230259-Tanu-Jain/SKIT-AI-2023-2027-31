@@ -47,7 +47,7 @@ def main():
             print("\n--- Top 5 Recommended Companies ---\n")
             print(results[columns].to_string(index=False))
 
-    job_df = pd.DataFrame(list(job_roles.find({}, {"_id": 0})))
+        job_df = pd.DataFrame(list(job_roles.find({}, {"_id": 0})))
 
     if job_df.empty:
         print("\nNo job-role data found in MongoDB.")
@@ -55,22 +55,20 @@ def main():
 
     role_results = recommend_job_roles(job_df, profile, top_n=5)
 
-    role_columns = [
-    col for col in [
-        "job_role", "role", "title",
-        "skill_match_score", "similarity_score",
-        "role_suitability_score",
-        "matched_skills", "missing_skills"
-    ]
-    if col in role_results.columns
-]
     print("\n--- Top 5 Job-Role Matches ---\n")
+
     if role_results.empty:
         print("No matching job roles found.")
-    elif not role_columns:
-        print("No recognized job-role display columns found.")
-        print(role_results.to_string(index=False))
     else:
+        role_columns = [
+    "job_role",
+    "skill_match_score",
+    "similarity_score",
+    "role_suitability_score",
+    "matched_skills",
+    "missing_skills"
+]
+
         print(role_results[role_columns].to_string(index=False))
 
 if __name__ == "__main__":

@@ -8,12 +8,12 @@ class UserProfile:
         comp_benefits=70
     ):
         if isinstance(skills, str):
-         skills = skills.split(",")
+            skills = skills.replace(";", ",").split(",")
 
         self.skills = {
-        str(skill).strip().lower()
-        for skill in (skills or [])
-        if skill is not None and str(skill).strip()
+            str(skill).strip().lower()
+            for skill in (skills or [])
+            if skill is not None and str(skill).strip()
         }
 
         self.preferences = {
@@ -24,9 +24,13 @@ class UserProfile:
         }
 
         for attribute, value in self.preferences.items():
-            if not isinstance(value, (int, float)) or not 0 <= value <= 100:
+            if (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not 0 <= value <= 100
+            ):
                 raise ValueError(
-                    f"{attribute} must be between 0 and 100."
+                    f"{attribute} must be a number between 0 and 100."
                 )
 
     def get_preferences(self):
