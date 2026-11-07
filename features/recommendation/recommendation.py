@@ -1,6 +1,7 @@
 import ast
 import pandas as pd
-
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 PREFERENCE_WEIGHT = 0.30
 INTELLIGENCE_WEIGHT = 0.70
 SKILL_MATCH_WEIGHT = 0.70
@@ -112,8 +113,6 @@ def _parse_skills(value):
         for skill in skills
         if skill is not None and str(skill).strip()
     }
-
-
 def _similarity_scores(user_skills, role_skills):
     """Use Sentence-BERT when available; otherwise use TF-IDF."""
     if not user_skills:
@@ -121,19 +120,15 @@ def _similarity_scores(user_skills, role_skills):
 
     try:
         from sentence_transformers import SentenceTransformer
-        from sklearn.metrics.pairwise import cosine_similarity
 
         global _embedding_model
-        try:
-            _embedding_model
-        except NameError:
+        if "_embedding_model" not in globals():
             _embedding_model = SentenceTransformer(
                 "sentence-transformers/all-MiniLM-L6-v2"
             )
 
-        user_list = sorted(user_skills)
         user_vectors = _embedding_model.encode(
-            user_list, normalize_embeddings=True
+            sorted(user_skills), normalize_embeddings=True
         )
 
         scores = []
@@ -146,7 +141,6 @@ def _similarity_scores(user_skills, role_skills):
                 sorted(required), normalize_embeddings=True
             )
             similarities = cosine_similarity(role_vectors, user_vectors)
-            # Each required skill receives its best similarity to a user skill.
             scores.append(
                 round(float(similarities.max(axis=1).mean()) * 100, 2)
             )
@@ -154,15 +148,8 @@ def _similarity_scores(user_skills, role_skills):
         return scores
 
     except Exception:
-        # Lightweight fallback; this is text similarity, not true semantics.
-        from sklearn.feature_extraction.text import TfidfVectorizer
-        from sklearn.metrics.pairwise import cosine_similarity
-
         user_text = " ".join(sorted(user_skills))
         role_texts = [" ".join(sorted(skills)) for skills in role_skills]
-
-        if not any(text.strip() for text in role_texts):
-            return [0.0] * len(role_skills)
 
         try:
             matrix = TfidfVectorizer(
@@ -176,47 +163,58 @@ def _similarity_scores(user_skills, role_skills):
         except ValueError:
             return [0.0] * len(role_skills)
 
-
 def recommend_job_roles(job_df, user_profile, top_n=5):
     if top_n < 1:
         raise ValueError("top_n must be at least 1.")
 
-    if "job_skill_set" not in job_df.columns:
-        raise ValueError("Missing job_skill_set column.")
-
     if job_df.empty:
-        return job_df.copy()
+        return pd.DataFrame()
 
-    df = job_df.copy()
     user_skills = _parse_skills(user_profile.get_skills())
-    df["required_skills"] = df["job_skill_set"].apply(_parse_skills)
 
-    df["matched_skills"] = df["required_skills"].apply(
-        lambda skills: sorted(user_skills & skills)
+    if "job_skill_set" not in job_df.columns:
+        raise ValueError("Missing job_skill_set column in job-role data.")
+
+    role_skills = [
+        _parse_skills(value) for value in job_df["job_skill_set"]
+    ]
+
+    similarity_scores = _similarity_scores(user_skills, role_skills)
+    results = []
+
+    for index, (_, job) in enumerate(job_df.iterrows()):
+        required_skills = role_skills[index]
+
+        matched_skills = sorted(user_skills & required_skills)
+        missing_skills = sorted(required_skills - user_skills)
+
+        skill_match_score = (
+            len(matched_skills) / len(required_skills) * 100
+            if required_skills else 0
+        )
+
+        similarity_score = similarity_scores[index]
+
+        suitability_score = (
+            SKILL_MATCH_WEIGHT * skill_match_score
+            + SIMILARITY_WEIGHT * similarity_score
+        )
+
+        results.append({
+            "job_role": job.get(
+    "job_title", job.get("job_role", job.get("role", "Unknown"))
+),
+            "required_skills": sorted(required_skills),
+            "matched_skills": matched_skills,
+            "missing_skills": missing_skills,
+            "skill_match_score": round(skill_match_score, 2),
+            "similarity_score": round(similarity_score, 2),
+            "role_suitability_score": round(suitability_score, 2)
+        })
+
+    return (
+        pd.DataFrame(results)
+        .sort_values("role_suitability_score", ascending=False)
+        .head(top_n)
+        .reset_index(drop=True)
     )
-    df["missing_skills"] = df["required_skills"].apply(
-        lambda skills: sorted(skills - user_skills)
-    )
-    df["skill_match_score"] = df["required_skills"].apply(
-        lambda skills: round(
-            100 * len(user_skills & skills) / len(skills), 2
-        ) if skills else 0.0
-    )
-
-    df["similarity_score"] = _similarity_scores(
-        user_skills, df["required_skills"].tolist()
-    )
-
-    df["role_suitability_score"] = (
-        SKILL_MATCH_WEIGHT * df["skill_match_score"]
-        + SIMILARITY_WEIGHT * df["similarity_score"]
-    ).round(2)
-
-    # Empty skill lists should not rank as suitable roles.
-    df.loc[df["required_skills"].apply(len) == 0,
-           "role_suitability_score"] = 0.0
-
-    return df.sort_values(
-        ["role_suitability_score", "skill_match_score"],
-        ascending=False
-    ).head(top_n).reset_index(drop=True)
