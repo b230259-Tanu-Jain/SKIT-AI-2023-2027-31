@@ -7,22 +7,27 @@ function formatRating(value) {
   return Number.isFinite(rating) ? `${rating}/100` : "N/A";
 }
 
-function CompanyCard({ name, score, reviews, workLife, culture, career }) {
+function CompanyCard({
+  name, score, reviews, workLife, culture, career, compBenefits
+}) {
   const navigate = useNavigate();
 
   const ratings = [
-    ["Work-life balance", workLife],
-    ["Culture & values", culture],
-    ["Career opportunities", career]
-  ];
+  ["Work-life balance", workLife],
+  ["Culture & values", culture],
+  ["Career opportunities", career],
+  ["Compensation & benefits", compBenefits]
+];
 
   const reviewCount = Number(reviews);
   const displayedReviews =
     Number.isFinite(reviewCount) && reviewCount >= 0
       ? reviewCount.toLocaleString()
       : "N/A";
-
-  const company = { name, score, reviews, workLife, culture, career };
+  
+  const company = {
+  name, score, reviews, workLife, culture, career, compBenefits
+};
 
   return (
     <article

@@ -7,7 +7,8 @@ const companyData = [
     reviews: 1250,
     workLife: 88,
     culture: 90,
-    career: 91
+    career: 91,
+    compBenefits: 89
   },
   {
     name: "Google",
@@ -15,7 +16,8 @@ const companyData = [
     reviews: 1100,
     workLife: 85,
     culture: 92,
-    career: 94
+    career: 94,
+    compBenefits: 91
   },
   {
     name: "Adobe",
@@ -23,7 +25,8 @@ const companyData = [
     reviews: 850,
     workLife: 89,
     culture: 88,
-    career: 85
+    career: 85,
+    compBenefits: 86
   }
 ];
 
