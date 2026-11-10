@@ -19,10 +19,11 @@ function CompanyDetails() {
   }
 
   const ratings = [
-    ["Work-Life Balance", company.workLife],
-    ["Culture & Values", company.culture],
-    ["Career Opportunities", company.career]
-  ];
+  ["Work-Life Balance", company.workLife],
+  ["Culture & Values", company.culture],
+  ["Career Opportunities", company.career],
+  ["Compensation & Benefits", company.compBenefits]
+];
 
   const formatRating = (value) => {
     const rating = Number(value);
@@ -51,9 +52,13 @@ function CompanyDetails() {
 
       <div className="details-stats">
         <div className="detail-box">
-          <h2>{Number.isFinite(Number(company.reviews))
-               ? Number(company.reviews).toLocaleString()
-                : "N/A"}</h2>
+          <h2>
+  {company.reviews !== null &&
+   company.reviews !== undefined &&
+   company.reviews !== "" &&
+   Number.isFinite(Number(company.reviews))
+    ? Number(company.reviews).toLocaleString()
+    : "N/A"}</h2>
           <p>Employee Reviews</p>
         </div>
 
