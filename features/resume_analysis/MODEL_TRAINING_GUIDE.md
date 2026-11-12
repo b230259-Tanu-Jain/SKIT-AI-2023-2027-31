@@ -67,7 +67,7 @@ This comparison uses the resume parser plus `data/raw/job_role_skills.csv`; it d
 
 ```bash
 python -m features.skill_gap.main path/to/resume.pdf \
-  --role "Data Analyst" \
+  --role "Sr Human Resource Generalist" \
   --data data/raw/job_role_skills.csv
 ```
 
