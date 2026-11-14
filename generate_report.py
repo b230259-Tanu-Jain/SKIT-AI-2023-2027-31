@@ -5,6 +5,7 @@ import io
 import os
 import sys
 import html
+import re
 import matplotlib.pyplot as plt
 
 from reportlab.lib.pagesizes import letter
@@ -113,41 +114,73 @@ def get_git_metrics(interval="weekly"):
     return students, timeline_activity, student_logs, scope_title
 
 def create_charts(students, timeline_activity, interval):
-    """Generates visual workload and trend charts."""
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 3.8))
+    """Generates readable workload and trend charts."""
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.2))
     authors = list(students.keys())
     periods = sorted(timeline_activity.keys())
 
-    # 1. Timeline Line Chart
+    def short_label(name, limit=20):
+        return name if len(name) <= limit else name[:limit - 1] + "…"
+
     if periods and authors:
         for author in authors:
             counts = [timeline_activity[p].get(author, 0) for p in periods]
-            ax1.plot(periods, counts, marker='o', linewidth=2, label=author)
-        ax1.set_title(f"Commit Timeline ({interval.capitalize()})", fontsize=10, fontweight='bold')
-        ax1.set_ylabel("Commits")
-        ax1.tick_params(axis='x', rotation=30)
-        ax1.grid(True, linestyle='--', alpha=0.5)
-        ax1.legend(fontsize=8)
+            ax1.plot(periods, counts, marker="o", linewidth=1.8,
+                     label=short_label(author), markersize=3)
+        ax1.set_title(f"Commit Timeline ({interval.capitalize()})",
+                      fontsize=10, fontweight="bold", pad=9)
+        ax1.set_ylabel("Commits", fontsize=8)
+        ax1.tick_params(axis="x", labelrotation=35, labelsize=7)
+        ax1.tick_params(axis="y", labelsize=7)
+        ax1.grid(True, linestyle="--", alpha=0.4)
+        ax1.legend(fontsize=6.5, loc="best", frameon=False)
     else:
-        ax1.text(0.5, 0.5, "No commits found in this interval", ha='center', va='center')
+        ax1.text(0.5, 0.5, "No commits found in this interval",
+                 ha="center", va="center", transform=ax1.transAxes)
+        ax1.set_axis_off()
 
-    # 2. Net LOC Bar Chart
     if authors:
         net_loc = [students[a]["added"] - students[a]["deleted"] for a in authors]
-        colors_list = ['#4E79A7', '#F28E2B', '#E15759', '#76B7B2', '#59A14F']
-        ax2.bar(authors, net_loc, color=colors_list[:len(authors)], width=0.45)
-        ax2.set_title("Net Lines of Code Written", fontsize=10, fontweight='bold')
-        ax2.set_ylabel("LOC (Added - Deleted)")
-        ax2.grid(axis='y', linestyle='--', alpha=0.5)
+        labels = [short_label(a, 22) for a in authors]
+        palette = ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F"]
+        positions = list(range(len(authors)))
+        bars = ax2.barh(positions, net_loc,
+                        color=[palette[i % len(palette)] for i in positions],
+                        height=0.58)
+        ax2.set_yticks(positions)
+        ax2.set_yticklabels(labels, fontsize=7)
+        ax2.invert_yaxis()
+        ax2.set_title("Net Lines of Code", fontsize=10, fontweight="bold", pad=9)
+        ax2.set_xlabel("LOC (Added - Deleted)", fontsize=8)
+        ax2.tick_params(axis="x", labelsize=7)
+        ax2.grid(axis="x", linestyle="--", alpha=0.4)
+        ax2.set_axisbelow(True)
+        for bar, value in zip(bars, net_loc):
+            offset = 3 if value >= 0 else -3
+            alignment = "left" if value >= 0 else "right"
+            ax2.annotate(f"{value:,}",
+                         (value, bar.get_y() + bar.get_height() / 2),
+                         xytext=(offset, 0), textcoords="offset points",
+                         va="center", ha=alignment, fontsize=6.5)
     else:
-        ax2.text(0.5, 0.5, "No LOC changes recorded", ha='center', va='center')
+        ax2.text(0.5, 0.5, "No LOC changes recorded",
+                 ha="center", va="center", transform=ax2.transAxes)
+        ax2.set_axis_off()
 
-    plt.tight_layout()
+    fig.tight_layout(pad=1.5)
     img_buffer = io.BytesIO()
-    plt.savefig(img_buffer, format='png', dpi=200)
-    plt.close()
+    fig.savefig(img_buffer, format="png", dpi=220, bbox_inches="tight")
+    plt.close(fig)
     img_buffer.seek(0)
-    return Image(img_buffer, width=500, height=170)
+    return Image(img_buffer, width=500, height=190)
+
+
+def format_commit_message(message):
+    """Convert simple Markdown emphasis and inline code to ReportLab markup."""
+    escaped = html.escape(message or "(No commit message)")
+    escaped = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", escaped)
+    escaped = re.sub(r"`([^`]+)`", r'<font name="Courier">\1</font>', escaped)
+    return escaped
 
 def generate_pdf(interval="weekly"):
     repo_name, branch_name = get_repo_info()
@@ -205,11 +238,12 @@ def generate_pdf(interval="weekly"):
     )
     sub_section_style = ParagraphStyle(
         'SubSectionStyle', parent=styles['Heading3'],
-        fontSize=9, leading=12, textColor=colors.HexColor("#2563EB"), spaceBefore=5, spaceAfter=2
+        fontSize=8.7, leading=10, textColor=colors.HexColor("#2563EB"),
+        spaceBefore=2, spaceAfter=1, keepWithNext=0
     )
     msg_style = ParagraphStyle(
         'MsgStyle', parent=styles['Normal'],
-        fontSize=8, leading=10, textColor=colors.HexColor("#1E293B")
+        fontSize=7.6, leading=9.4, textColor=colors.HexColor("#1E293B"), wordWrap='CJK'
     )
     meta_cell_style = ParagraphStyle(
         'MetaCellStyle', parent=styles['Normal'],
@@ -239,35 +273,54 @@ def generate_pdf(interval="weekly"):
     # 3. Individual Summary Table
     story.append(Paragraph("1. Individual Contribution Breakdown", section_style))
     total_commits = sum(data["commits"] for data in students.values())
-    table_data = [["Student Name", "Commits (%)", "Lines Added", "Lines Deleted", "Net LOC", "Active Days"]]
-    
+    header_cell_style = ParagraphStyle(
+        "SummaryHeader", parent=styles["Normal"], fontSize=7.2, leading=8.5,
+        textColor=colors.whitesmoke, alignment=1, fontName="Helvetica-Bold"
+    )
+    summary_cell_style = ParagraphStyle(
+        "SummaryCell", parent=styles["Normal"], fontSize=7.2, leading=8.8,
+        textColor=colors.HexColor("#1E293B"), alignment=1, wordWrap="CJK"
+    )
+    table_data = [[
+        Paragraph("Student Name", header_cell_style),
+        Paragraph("Commits (%)", header_cell_style),
+        Paragraph("Lines Added", header_cell_style),
+        Paragraph("Lines Deleted", header_cell_style),
+        Paragraph("Net LOC", header_cell_style),
+        Paragraph("Active Days", header_cell_style)
+    ]]
+
     if students:
         for name, data in students.items():
             pct = (data["commits"] / total_commits * 100) if total_commits > 0 else 0
             net = data["added"] - data["deleted"]
+            values = [name, f"{data['commits']} ({pct:.1f}%)",
+                      f"+{data['added']:,}", f"-{data['deleted']:,}",
+                      f"{net:,}", f"{len(data['active_days'])} days"]
             table_data.append([
-                html.escape(name),
-                f"{data['commits']} ({pct:.1f}%)",
-                f"+{data['added']:,}",
-                f"-{data['deleted']:,}",
-                f"{net:,}",
-                f"{len(data['active_days'])} days"
+                Paragraph(html.escape(str(value)), summary_cell_style)
+                for value in values
             ])
     else:
-        table_data.append(["No commits found in this period. Run with 'final' to see all commits.", "-", "-", "-", "-", "-"])
+        table_data.append([
+            Paragraph("No commits found in this period. Run with 'final' to see all commits.",
+                      summary_cell_style), "-", "-", "-", "-", "-"
+        ])
 
-    table = Table(table_data, colWidths=[120, 80, 80, 80, 80, 100])
+    table = Table(table_data, colWidths=[155, 75, 75, 75, 75, 85], repeatRows=1)
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1E293B")),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('ALIGN', (0, 1), (0, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 3.5),
-        ('TOPPADDING', (0, 0), (-1, -1), 3.5),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('LEFTPADDING', (0, 0), (-1, -1), 4),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor("#F8FAFC")]),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1),
+         [colors.white, colors.HexColor("#F8FAFC")]),
     ]))
     story.append(table)
     story.append(Spacer(1, 6))
@@ -285,13 +338,16 @@ def generate_pdf(interval="weekly"):
     else:
         for student_name, logs in student_logs.items():
             student_section = []
-            student_section.append(Paragraph(f"<b>Student:</b> {html.escape(student_name)} — <i>{len(logs)} commit(s)</i>", sub_section_style))
+            student_section.append(Paragraph(
+                f"<b>Student:</b> {html.escape(student_name)} — <i>{len(logs)} commit(s)</i>",
+                sub_section_style
+            ))
             
             log_table_data = [["Date", "Hash", "Commit Message", "Mentor Marks (/10)"]]
             
             # Place the clean marking line in the first row
             first_date, first_sha, first_msg = logs[0]
-            safe_msg = html.escape(first_msg) if first_msg else "(No commit message)"
+            safe_msg = format_commit_message(first_msg)
             log_table_data.append([
                 Paragraph(first_date, meta_cell_style),
                 Paragraph(f"<code>{first_sha}</code>", meta_cell_style),
@@ -301,7 +357,7 @@ def generate_pdf(interval="weekly"):
             
             # Subsequent commit rows have blank placeholder for merged cell
             for date_val, sha_val, msg_val in logs[1:]:
-                safe_msg = html.escape(msg_val) if msg_val else "(No commit message)"
+                safe_msg = format_commit_message(msg_val)
                 log_table_data.append([
                     Paragraph(date_val, meta_cell_style),
                     Paragraph(f"<code>{sha_val}</code>", meta_cell_style),
@@ -310,7 +366,13 @@ def generate_pdf(interval="weekly"):
                 ])
             
             num_rows = len(log_table_data)
-            log_table = Table(log_table_data, colWidths=[65, 50, 335, 90])
+            log_table = Table(
+                log_table_data,
+                colWidths=[62, 48, 330, 100],
+                repeatRows=1,
+                splitByRow=1,
+                splitInRow=1
+            )
             
             t_style = [
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#475569")),
@@ -318,20 +380,24 @@ def generate_pdf(interval="weekly"):
                 ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                 ('ALIGN', (3, 0), (3, -1), 'CENTER'),
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, -1), 7.5),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 2.5),
-                ('TOPPADDING', (0, 0), (-1, -1), 2.5),
+                ('FONTSIZE', (0, 0), (-1, -1), 7.2),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 4),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
                 ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
                 ('ROWBACKGROUNDS', (0, 1), (2, -1), [colors.white, colors.HexColor("#F8FAFC")]),
-                ('SPAN', (3, 1), (3, num_rows - 1)),              # Vertically merge mentor marks column
-                ('VALIGN', (3, 1), (3, num_rows - 1), 'MIDDLE'),     # Vertically center the marks line
-                ('BACKGROUND', (3, 1), (3, num_rows - 1), colors.HexColor("#FEF3C7")), # Accent for marks area
+                # Keep mentor marks in a normal cell so the table can split across pages.
+                ('VALIGN', (3, 1), (3, -1), 'TOP'),
+                ('BACKGROUND', (3, 1), (3, 1), colors.HexColor("#FEF3C7")),
+                ('BACKGROUND', (3, 2), (3, -1), colors.white)
             ]
             
             log_table.setStyle(TableStyle(t_style))
             student_section.append(log_table)
-            student_section.append(Spacer(1, 5))
-            story.append(KeepTogether(student_section))
+            student_section.append(Spacer(1, 2))
+            story.extend(student_section)  # Continue with the next student in any remaining page space.
 
     # 6. Symmetrical Signatures
     story.append(Spacer(1, 16))
