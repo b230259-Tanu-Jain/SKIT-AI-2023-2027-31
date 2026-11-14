@@ -1,6 +1,6 @@
 # Resume Intelligence - Vanshika Choudhary
 
-## Status as of 4 November 2026
+## Status as of 11 November 2026
 
 Completed work in this folder:
 
@@ -12,9 +12,11 @@ Completed work in this folder:
   and 0.936 macro F1 on a 234-row holdout; the original postings CSV is not in
   this repository, so reproducing the metrics requires obtaining that exact
   permitted dataset.
-- Career-role matching is in its Form 2 window through 10 November. Skill-gap
-  analysis is scheduled 1 November-5 December and has an initial exact,
-  normalized comparison implementation in `features/skill_gap/main.py`.
+- The Form 2 career-role matching milestone ended 10 November. The category
+  predictor and posting similarity retriever are present; evaluation against
+  labelled resume/job match judgments and application integration remain open.
+- Skill-gap analysis is scheduled 1 November-5 December and has an initial
+  exact, normalized comparison implementation in `features/skill_gap/main.py`.
 
 Run from the project root:
 
