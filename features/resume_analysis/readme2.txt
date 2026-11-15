@@ -1,8 +1,8 @@
 # Resume Intelligence - Vanshika Choudhary
 
-## Status as of 11 November 2026
+## Status as of 15 November 2026
 
-Completed work in this folder:
+Implemented work in this folder as of this date:
 
 - PDF resume text extraction and cleaning (PyMuPDF with pypdf fallback).
 - NLP-assisted technical skill extraction, plus education, experience, project,
@@ -17,6 +17,10 @@ Completed work in this folder:
   labelled resume/job match judgments and application integration remain open.
 - Skill-gap analysis is scheduled 1 November-5 December and has an initial
   exact, normalized comparison implementation in `features/skill_gap/main.py`.
+  The CLI now also checks exact phrases from the selected role against resume
+  text, so it can match role skills outside the parser's general vocabulary.
+- The module test suite exercises resume parsing, role-skill matching, model
+  training, and loading the checked-in matcher artifact.
 
 Run from the project root:
 
@@ -58,6 +62,14 @@ Try a saved model without requiring the CSV again:
 python -m features.resume_analysis.job_matcher recommend \
   --text "Python developer with Flask, SQL and AWS experience" \
   --limit 3
+```
+
+To parse a text-based resume PDF and query the saved matcher in one step:
+
+```bash
+python -m features.resume_analysis.job_matcher recommend-resume \
+  --resume path/to/resume.pdf \
+  --limit 5
 ```
 
 The model output contains the predicted category plus matching job IDs, titles,
