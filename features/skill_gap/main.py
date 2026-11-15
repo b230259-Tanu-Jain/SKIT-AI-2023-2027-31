@@ -35,29 +35,43 @@ def _unique_skills(skills: Iterable[str]) -> list[str]:
     return list(unique.values())
 
 
-def analyze_skill_gap(resume_skills: Iterable[str], required_skills: Iterable[str], preferred_skills: Iterable[str] = ()) -> dict:
+def analyze_skill_gap(
+    resume_skills: Iterable[str],
+    required_skills: Iterable[str],
+    preferred_skills: Iterable[str] = (),
+    resume_text: str = "",
+) -> dict:
     """Return matched and missing required/preferred skills and coverage."""
-    resume = _unique_skills(resume_skills)
     required = _unique_skills(required_skills)
     preferred = _unique_skills(preferred_skills)
-    resume_index = {normalize_skill(skill) for skill in resume}
+    detected = _unique_skills(resume_skills)
+    resume_index = {normalize_skill(skill) for skill in detected}
+    # The general resume parser intentionally uses a modest curated vocabulary.
+    # For a selected role, also detect its exact required/preferred phrases in
+    # the resume text so dataset skills outside that vocabulary are not missed.
+    normalized_text = f" {normalize_skill(resume_text)} "
+
+    def is_present(skill: str) -> bool:
+        normalized = normalize_skill(skill)
+        return normalized in resume_index or f" {normalized} " in normalized_text
 
     def compare(targets: list[str]) -> tuple[list[str], list[str]]:
-        matched = [skill for skill in targets if normalize_skill(skill) in resume_index]
-        missing = [skill for skill in targets if normalize_skill(skill) not in resume_index]
+        matched = [skill for skill in targets if is_present(skill)]
+        missing = [skill for skill in targets if not is_present(skill)]
         return matched, missing
 
     matched_required, missing_required = compare(required)
     matched_preferred, missing_preferred = compare(preferred)
+    detected = _unique_skills([*detected, *matched_required, *matched_preferred])
     return {
-        "resume_skills": resume,
+        "resume_skills": detected,
         "required_skills": {
             "matched": matched_required,
             "missing": missing_required,
             "coverage_percent": round(100 * len(matched_required) / len(required), 1) if required else 0.0,
         },
         "preferred_skills": {"matched": matched_preferred, "missing": missing_preferred},
-        "matching_method": "normalized exact skill-name matching",
+        "matching_method": "normalized exact skill-name and selected-role phrase matching",
         "note": "A missing skill means it was not detected in the resume text; it may still be present but phrased differently.",
     }
 
@@ -88,7 +102,10 @@ def main() -> None:
         result = {
             "job_role": role["job_role"],
             "analysis": analyze_skill_gap(
-                profile["skills"], role["required_skill_list"], role["preferred_skill_list"]
+                profile["skills"],
+                role["required_skill_list"],
+                role["preferred_skill_list"],
+                resume_text=profile["clean_text"],
             ),
         }
         print(json.dumps(result, indent=2, ensure_ascii=False))
