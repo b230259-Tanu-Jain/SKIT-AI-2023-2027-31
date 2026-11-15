@@ -59,7 +59,7 @@ python -m features.resume_analysis.job_matcher recommend \
   --limit 5
 ```
 
-The checked-in metrics file records a previous run over 1,167 rows with 234 validation rows, 0.9359 accuracy and 0.9368 macro F1. These results are reproducible only when the exact source CSV, preprocessing, dependency versions, and split are available. The source postings CSV is not currently checked into this repository.
+The checked-in metrics file records a previous run over 1,167 rows with 234 validation rows, 0.9359 accuracy and 0.9368 macro F1. These results are reproducible only when the exact source CSV, preprocessing, dependency versions, and split are available. The source postings CSV is not currently checked into this repository. The requirements pin scikit-learn 1.8.0 to match the checked-in model artifact.
 
 ## 5. Try the skill-gap feature
 
