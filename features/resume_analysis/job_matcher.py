@@ -204,12 +204,29 @@ def _main() -> None:
     query_parser.add_argument("--model", default="features/resume_analysis/models/job_postings_matcher.joblib")
     query_parser.add_argument("--text", required=True, help="resume text or extracted resume content")
     query_parser.add_argument("--limit", type=int, default=5)
+    resume_parser = subparsers.add_parser("recommend-resume", help="extract a PDF resume and find matching jobs")
+    resume_parser.add_argument("--model", default="features/resume_analysis/models/job_postings_matcher.joblib")
+    resume_parser.add_argument("--resume", required=True, help="path to a text-based PDF resume")
+    resume_parser.add_argument("--limit", type=int, default=5)
     args = parser.parse_args()
     if args.command == "train":
         print(json.dumps(train_model(args.data, args.model), indent=2))
     else:
         matcher = load_model(args.model)
-        print(json.dumps({"predicted_category": matcher.predict_category(args.text), "matches": matcher.recommend_jobs(args.text, args.limit)}, indent=2))
+        if args.command == "recommend-resume":
+            from .resume_parser import parse_resume
+
+            resume_text = parse_resume(args.resume)["clean_text"]
+        else:
+            resume_text = args.text
+        print(json.dumps({
+            "category_classifier_prediction": matcher.predict_category(resume_text),
+            "category_prediction_note": (
+                "This is a broad category classifier output, not a suitability decision. "
+                "Review the ranked posting matches for relevance."
+            ),
+            "matches": matcher.recommend_jobs(resume_text, args.limit),
+        }, indent=2))
 
 
 if __name__ == "__main__":

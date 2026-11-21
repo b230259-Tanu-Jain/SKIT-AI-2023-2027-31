@@ -21,11 +21,13 @@ class ResumeParser:
         if not path.is_file():
             raise FileNotFoundError(f"Resume not found: {path}")
 
-        # PyMuPDF is the primary extractor selected for the project.  pypdf is
-        # retained as a lightweight fallback so the feature remains usable if
-        # only the original Sprint 2 dependency is installed.
+        # PyMuPDF is the primary extractor selected for the project. Import its
+        # current module name first; retain the legacy alias for older installs.
         try:
-            import fitz
+            try:
+                import pymupdf as fitz
+            except ImportError:
+                import fitz
 
             with fitz.open(path) as document:
                 pages = [page.get_text("text") for page in document]
